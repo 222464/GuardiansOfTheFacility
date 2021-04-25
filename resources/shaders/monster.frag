@@ -2,7 +2,7 @@ uniform sampler2D texture;
 uniform vec2 size;
 uniform vec2 offset;
 
-const float pixelation = 2.0f;
+const float pixelation = 1.0f;
 
 void main() {
     vec2 coord = gl_TexCoord[0].xy + offset / size; 
