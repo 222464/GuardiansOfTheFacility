@@ -121,7 +121,7 @@ void World::init(
     player = std::make_shared<Player>();
     player->init(this, sf::Vector2f(200.0f, 16.0f * 13.0f));
 
-    monsterTexture.loadFromFile("resources/textures/meat.png");
+    monsterTexture.loadFromFile("resources/textures/meat2.png");
     monsterRenderShader.loadFromFile("resources/shaders/monster.frag", sf::Shader::Fragment);
 
     const ldtk::Entity &monsterSpawn = entities.getEntities("Monster")[0];
