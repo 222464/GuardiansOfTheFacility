@@ -135,7 +135,7 @@ void Monster::init(
         int repeats = repeatDist(subRng);
 
         for (int r = 0; r < repeats; r++)
-            lastIndex = limbGen(lastIndex, subSeed + 12345, depth + 1);
+            lastIndex = limbGen(lastIndex, subSeed, depth + 1);
 
         return lastIndex;
     };
