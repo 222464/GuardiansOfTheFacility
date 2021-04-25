@@ -31,9 +31,9 @@ void Player::init(
     light->emissionSprite.setTexture(lightTex);
     light->emissionSprite.setOrigin(lightTex.getSize().x * 0.5f, lightTex.getSize().y * 0.5f);
     light->emissionSprite.setPosition(position);
-    light->emissionSprite.setScale(2.0f * renderScale, 2.0f * renderScale);
+    light->emissionSprite.setScale(2.0f , 2.0f );
     light->emissionSprite.setColor(sf::Color(50, 100, 50, 255));
-    light->sourceRadius = 10.0f * renderScale;
+    light->sourceRadius = 10.0f ;
 
     world->ls.addLight(light);
 
@@ -47,8 +47,8 @@ void Player::init(
     flash->emissionSprite.setTexture(lightTex);
     flash->emissionSprite.setOrigin(lightTex.getSize().x * 0.5f, lightTex.getSize().y * 0.5f);
     flash->emissionSprite.setPosition(position);
-    flash->emissionSprite.setScale(3.0f * renderScale, 3.0f * renderScale);
-    flash->sourceRadius = 10.0f * renderScale;
+    flash->emissionSprite.setScale(3.0f , 3.0f );
+    flash->sourceRadius = 10.0f;
 
     world->ls.addLight(flash);
 }
@@ -60,7 +60,7 @@ void Player::update(
 ) {
     sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
 
-    const float speed = 60.0f;
+    const float speed = 80.0f;
     const float walkAgainTime = shootTime * 0.5f;
 
     direction = 0;
@@ -106,13 +106,13 @@ void Player::update(
     else if (position.x > world->level->size.x - wallDist)
         position.x = world->level->size.x - wallDist;
 
-    light->emissionSprite.setPosition((position + sf::Vector2f(0.0f, -38.0f)) * renderScale);
+    light->emissionSprite.setPosition((position + sf::Vector2f(0.0f, -38.0f)) );
     light->quadtreeUpdate();
 
-    flash->emissionSprite.setPosition((position + sf::Vector2f(flipped ? -10.0f : 10.0f, -36.0f)) * renderScale);
+    flash->emissionSprite.setPosition((position + sf::Vector2f(flipped ? -10.0f : 10.0f, -36.0f)) );
     flash->quadtreeUpdate();
 
-    flipped = mousePos.x < position.x * renderScale;
+    flipped = mousePos.x < position.x ;
 
     if (direction != 0) {
         walkTimer += dt;
@@ -157,10 +157,10 @@ void Player::render(
     else
         s.setTexture(walking[walkFrame]);
 
-    s.setScale(flipped ? -renderScale : renderScale, renderScale);
+    s.setScale(flipped ? -1.0f : 1.0f, 1.0f);
 
     s.setOrigin(shootTimer > shootTime * flashRatio ? standing.getSize().x * 0.5f - 3.0f : standing.getSize().x * 0.5f, standing.getSize().y);
-    s.setPosition(position * renderScale);
+    s.setPosition(position );
 
     window.draw(s);
 
@@ -169,9 +169,8 @@ void Player::render(
         rs.setSize(sf::Vector2f(2.0f, 1.0f));
         rs.setFillColor(sf::Color(240, 240, 150, 255 * std::sqrt(casingAlpha)));
         rs.setOrigin(1.0f, 0.5f);
-        rs.setPosition(casingPos * renderScale);
+        rs.setPosition(casingPos );
         rs.setRotation(casingAngle * 180.0f / pi);
-        rs.setScale(renderScale, renderScale);
 
         window.draw(rs);
     }
@@ -187,7 +186,6 @@ void Player::renderPostLighting(
     chs.setTexture(crosshair);
     chs.setOrigin(crosshair.getSize().x * 0.5f, crosshair.getSize().y * 0.5f);
     chs.setPosition(mousePos);
-    chs.setScale(renderScale, renderScale);
 
     window.draw(chs);
 
@@ -196,10 +194,10 @@ void Player::renderPostLighting(
     if (direction == 0 && shootTimer > shootTime * flashRatio) {
         s.setTexture(firingEmissive);
 
-        s.setScale(flipped ? -renderScale : renderScale, renderScale);
+        s.setScale(flipped ? -1.0f : 1.0f, 1.0f);
 
         s.setOrigin(standing.getSize().x * 0.5f - 3.0f, standing.getSize().y);
-        s.setPosition(position * renderScale);
+        s.setPosition(position );
 
         window.draw(s);
     }

@@ -16,7 +16,7 @@ public:
 
         b2Body* body;
 
-        b2MotorJoint* motorJoint;
+        b2RevoluteJoint* motorJoint;
 
         float targetAngle;
 

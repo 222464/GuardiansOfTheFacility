@@ -95,12 +95,12 @@ void World::init(
         std::shared_ptr<ltbl::LightPointEmission> light = std::make_shared<ltbl::LightPointEmission>();
 
         light->emissionSprite.setOrigin(spookyLightTexture.getSize().x * 0.5f, 64.0f);
-        light->emissionSprite.setPosition(entity.getPosition().x * renderScale, entity.getPosition().y * renderScale);
+        light->emissionSprite.setPosition(entity.getPosition().x, entity.getPosition().y);
         light->emissionSprite.setTexture(spookyLightTexture);
-        light->emissionSprite.setScale(0.5f * renderScale, 0.5f * renderScale);
+        light->emissionSprite.setScale(0.5f, 0.5f);
         light->emissionSprite.setColor(sf::Color(200, 200, 200, 255));
         light->localCastCenter = sf::Vector2f(0.0f, 0.0f);
-        light->sourceRadius = 10.0f * renderScale;
+        light->sourceRadius = 10.0f;
 
         ls.addLight(light);
     }
@@ -109,10 +109,10 @@ void World::init(
         std::shared_ptr<ltbl::LightShape> shape = std::make_shared<ltbl::LightShape>();
 
         shape->shape.setPointCount(4);
-        shape->shape.setPoint(0, sf::Vector2f(entity.getPosition().x, entity.getPosition().y) * renderScale);
-        shape->shape.setPoint(1, sf::Vector2f(entity.getPosition().x + entity.getSize().x, entity.getPosition().y) * renderScale);
-        shape->shape.setPoint(2, sf::Vector2f(entity.getPosition().x + entity.getSize().x, entity.getPosition().y + entity.getSize().y) * renderScale);
-        shape->shape.setPoint(3, sf::Vector2f(entity.getPosition().x, entity.getPosition().y + entity.getSize().y) * renderScale);
+        shape->shape.setPoint(0, sf::Vector2f(entity.getPosition().x, entity.getPosition().y));
+        shape->shape.setPoint(1, sf::Vector2f(entity.getPosition().x + entity.getSize().x, entity.getPosition().y));
+        shape->shape.setPoint(2, sf::Vector2f(entity.getPosition().x + entity.getSize().x, entity.getPosition().y + entity.getSize().y));
+        shape->shape.setPoint(3, sf::Vector2f(entity.getPosition().x, entity.getPosition().y + entity.getSize().y));
         shape->renderLightOverShape = true;
 
         ls.addShape(shape);
@@ -123,8 +123,14 @@ void World::init(
 
     monsterTexture.loadFromFile("resources/textures/meat.png");
 
+    const ldtk::Entity &monsterSpawn = entities.getEntities("Monster")[0];
+
     env = std::make_shared<MonsterEnv>();
-    env->init();
+    env->spawn = b2Vec2(monsterSpawn.getPosition().x * renderScaleInv, -monsterSpawn.getPosition().y * renderScaleInv);
+
+    ldtk::IntPoint floorPos = entities.getEntities("Floor")[0].getPosition();
+
+    env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv));
 }
 
 void World::update(
@@ -132,13 +138,13 @@ void World::update(
     float dt
 ) {
     player->update(this, window, dt);
+    env->step(dt);
 }
 
 void World::render(
     sf::RenderWindow &window
 ) {
     sf::RenderStates states;
-    states.transform.scale(renderScale, renderScale);
     states.texture = &tileset;
     window.draw(tilemap1, states);
     window.draw(tilemap2, states);

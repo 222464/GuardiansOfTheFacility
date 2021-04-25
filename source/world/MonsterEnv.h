@@ -6,12 +6,23 @@ public:
     Monster monster;
 
     unsigned int seed;
+    b2Vec2 spawn;
+    b2Vec2 floorPos;
 
     std::shared_ptr<b2World> world;
 
-    void init();
+    MonsterEnv()
+    :
+    spawn(0.0f, 0.0f)
+    {}
+
+    void init(
+        const sf::Vector2f &floorPos
+    );
 
     void reset();
 
-    void step();
+    void step(
+        float dt
+    );
 };
