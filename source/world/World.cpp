@@ -122,6 +122,7 @@ void World::init(
     player->init(this, sf::Vector2f(200.0f, 16.0f * 13.0f));
 
     monsterTexture.loadFromFile("resources/textures/meat.png");
+    monsterRenderShader.loadFromFile("resources/shaders/monster.frag", sf::Shader::Fragment);
 
     const ldtk::Entity &monsterSpawn = entities.getEntities("Monster")[0];
 
@@ -131,6 +132,8 @@ void World::init(
     ldtk::IntPoint floorPos = entities.getEntities("Floor")[0].getPosition();
 
     env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv));
+
+    monsterRenderTexture.create(window.getSize().x, window.getSize().y);
 }
 
 void World::update(
@@ -144,6 +147,8 @@ void World::update(
 void World::render(
     sf::RenderWindow &window
 ) {
+    sf::View oldView = window.getView();
+
     sf::RenderStates states;
     states.texture = &tileset;
     window.draw(tilemap1, states);
@@ -151,7 +156,23 @@ void World::render(
     window.draw(tilemap3, states);
 
     player->render(this, window);
-    env->monster.render(window, &monsterTexture);
+    monsterRenderTexture.setView(window.getView());
+    monsterRenderTexture.clear(sf::Color::Transparent);
+    env->monster.render(monsterRenderTexture, &monsterTexture);
+    monsterRenderTexture.display();
+
+    window.setView(window.getDefaultView());
+
+    sf::Sprite monsterSprite;
+    monsterSprite.setTexture(monsterRenderTexture.getTexture());
+    monsterRenderShader.setUniform("size", sf::Vector2f(oldView.getSize().x, oldView.getSize().y));
+    monsterRenderShader.setUniform("offset", sf::Vector2f(oldView.getCenter().x, -oldView.getCenter().y));
+
+    sf::RenderStates monsterStates;
+    monsterStates.shader = &monsterRenderShader;
+    window.draw(monsterSprite, monsterStates);
+
+    window.setView(oldView);
 
     ls.render(window.getView(), unshadowShader, lightOverShapeShader);
 
@@ -161,8 +182,6 @@ void World::render(
     sf::RenderStates lightStates = sf::RenderStates::Default;
     lightStates.blendMode = sf::BlendMultiply;
     
-    sf::View oldView = window.getView();
-
     window.setView(window.getDefaultView());
 
     window.draw(lightSprite, lightStates);

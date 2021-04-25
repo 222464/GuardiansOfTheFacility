@@ -31,6 +31,8 @@ public:
 
     sf::Texture spookyLightTexture;
     sf::Texture monsterTexture;
+    sf::Shader monsterRenderShader;
+    sf::RenderTexture monsterRenderTexture;
 
     std::vector<std::shared_ptr<ltbl::LightPointEmission>> lights;
     std::vector<std::shared_ptr<ltbl::LightShape>> lightShapes;

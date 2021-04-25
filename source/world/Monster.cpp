@@ -161,7 +161,7 @@ void Monster::step(
 }
 
 void Monster::render(
-    sf::RenderWindow &window,
+    sf::RenderTarget &window,
     sf::Texture* monsterTexture
 ) {
     for (int i = 0; i < limbs.size(); i++) {

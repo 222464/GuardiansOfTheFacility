@@ -44,7 +44,7 @@ public:
     );
 
     void render(
-        sf::RenderWindow &window,
+        sf::RenderTarget &window,
         sf::Texture* monsterTexture
     );
 };
