@@ -3,11 +3,13 @@
 const b2Vec2 gravity(0.0f, -9.81f);
 
 void MonsterEnv::init(
-    const sf::Vector2f &floorPos
+    const sf::Vector2f &floorPos,
+    sf::SoundBuffer* popSound
 ) {
     seed = 12345;
     reward = 0.0f;
     this->floorPos = b2Vec2(floorPos.x, floorPos.y);
+    this->popSound = popSound;
 
     reset();
 }
@@ -31,13 +33,15 @@ void MonsterEnv::reset() {
     
     floor->CreateFixture(&fixtureDef);
 
-    monster.init(this, spawn, seed);
+    monster.init(this, spawn, seed, popSound);
 }
 
 void MonsterEnv::step(
-    float dt
+    float dt,
+    World* world,
+    bool simMode 
 ) {
-    monster.step(reward);
+    monster.step(world, reward, simMode);
 
-    world->Step(dt, 8, 8);
+    this->world->Step(dt, 8, 8);
 }

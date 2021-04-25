@@ -1,5 +1,6 @@
 #include "Monster.h"
 #include "MonsterEnv.h"
+#include "Player.h"
 
 const int maxLimbs = 20;
 const float moveRange = 1.5f;
@@ -14,11 +15,14 @@ const int sensorRes = 9;
 const int actionRes = 7;
 
 const float motorSpeed = 4.0f;
+const float weakSpotChance = 0.2f;
+const float weakSpotSize = 0.3f;
 
 void Monster::init(
     MonsterEnv* env,
     const b2Vec2 &spawnPos,
-    unsigned int seed
+    unsigned int seed,
+    sf::SoundBuffer* popSound
 ) {
     std::mt19937 rng(seed);
 
@@ -60,6 +64,8 @@ void Monster::init(
         root.motorJoint = nullptr;
 
         root.texOffset = sf::Vector2f(texOffsetDist(rng), texOffsetDist(rng));
+
+        root.hasWeakspot = true;
 
         limbs.push_back(root);
     }
@@ -143,6 +149,9 @@ void Monster::init(
 
         next.texOffset = sf::Vector2f(texOffsetDist(subRng), texOffsetDist(subRng));
 
+        if (dist01(subRng) < weakSpotChance)
+            next.hasWeakspot = true;
+
         limbs.push_back(next);
 
         int lastIndex = limbs.size() - 1;
@@ -193,34 +202,85 @@ void Monster::init(
     ioDescs[1].type = aon::action;
 
     h.initRandom(ioDescs, lds);
+
+    // Resources
+    popBuffer = popSound;
+    pop.setBuffer(*popBuffer);
+
+    dead = false;
 }
 
 void Monster::step(
-    float reward
+    World* world,
+    float reward,
+    bool simMode
 ) {
-    aon::IntBuffer sensors(h.getInputSizes()[0].x * h.getInputSizes()[1].y, 0);
+    if (!dead) {
+        aon::IntBuffer sensors(h.getInputSizes()[0].x * h.getInputSizes()[1].y, 0);
 
-    for (int i = 1; i < limbs.size(); i++)
-        sensors[i - 1] = (std::min(moveRange, std::max(-moveRange, limbs[i].motorJoint->GetJointAngle())) / moveRange * 0.5f + 0.5f) * (sensorRes - 1) + 0.5f;
+        for (int i = 1; i < limbs.size(); i++)
+            sensors[i - 1] = (std::min(moveRange, std::max(-moveRange, limbs[i].motorJoint->GetJointAngle())) / moveRange * 0.5f + 0.5f) * (sensorRes - 1) + 0.5f;
 
-    aon::Array<const aon::IntBuffer*> inputs(2);
-    inputs[0] = &sensors;
-    inputs[1] = &h.getPredictionCIs(1);
+        aon::Array<const aon::IntBuffer*> inputs(2);
+        inputs[0] = &sensors;
+        inputs[1] = &h.getPredictionCIs(1);
 
-    h.step(inputs, true, reward);
+        h.step(inputs, true, reward);
 
-    for (int i = 1; i < limbs.size(); i++) {
-        float target = moveRange * (h.getPredictionCIs(1)[i - 1] / static_cast<float>(actionRes - 1) * 2.0f - 1.0f);
+        for (int i = 1; i < limbs.size(); i++) {
+            float target = moveRange * (h.getPredictionCIs(1)[i - 1] / static_cast<float>(actionRes - 1) * 2.0f - 1.0f);
 
-        limbs[i].motorJoint->SetMotorSpeed(motorSpeed * (target - limbs[i].motorJoint->GetJointAngle()));
+            limbs[i].motorJoint->SetMotorSpeed(motorSpeed * (target - limbs[i].motorJoint->GetJointAngle()));
+        }
+
+        reward = -limbs[0].body->GetLinearVelocity().x;
     }
 
-    reward = -limbs[0].body->GetLinearVelocity().x;
+    if (!simMode && !dead) {
+        // Weak spot management
+        int numWeakSpots = 0;
+
+        for (int i = 0; i < limbs.size(); i++) {
+            if (limbs[i].hasWeakspot) {
+                numWeakSpots++;
+
+                if (world->player->shot) {
+                    sf::Vector2f centerPos(limbs[i].body->GetPosition().x, -limbs[i].body->GetPosition().y);
+                    sf::Vector2f delta = centerPos - world->player->shootPos * renderScaleInv;
+
+                    float dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
+
+                    if (dist < weakSpotSize * 0.5f) {
+                        limbs[i].hasWeakspot = false;
+
+                        numWeakSpots--;
+
+                        std::uniform_int_distribution<int> quadDist(0, 3);
+
+                        world->splatters.push_back(sf::Vector3f(centerPos.x * renderScale, centerPos.y * renderScale, quadDist(world->rng) * 90.0f));
+
+                        // Destroy sound
+                        pop.play();
+                    }
+                }
+            }
+        }
+
+        if (numWeakSpots == 0) {
+            dead = true;
+
+            // Go limp
+            for (int i = 1; i < limbs.size(); i++) {
+                limbs[i].motorJoint->SetMaxMotorTorque(0.01f);
+            }
+        }
+    }
 }
 
 void Monster::render(
     sf::RenderTarget &window,
-    sf::Texture* monsterTexture
+    sf::Texture* monsterTexture,
+    sf::Texture* weakSpotTexture
 ) {
     for (int i = 0; i < limbs.size(); i++) {
         sf::RectangleShape rs;
@@ -232,5 +292,18 @@ void Monster::render(
         rs.setTextureRect(sf::IntRect(monsterTexture->getSize().x * limbs[i].texOffset.x, monsterTexture->getSize().y * limbs[i].texOffset.y, texRectSize * monsterTexture->getSize().x, texRectSize * monsterTexture->getSize().y));
 
         window.draw(rs);
+    }
+
+    for (int i = 0; i < limbs.size(); i++) {
+        if (limbs[i].hasWeakspot) {
+            sf::Sprite s;
+            s.setTexture(*weakSpotTexture);
+            s.setScale(weakSpotSize / weakSpotTexture->getSize().x * renderScale, weakSpotSize / weakSpotTexture->getSize().y * renderScale);
+            s.setOrigin(weakSpotTexture->getSize().x * 0.5f, weakSpotTexture->getSize().y * 0.5f);
+            s.setPosition(limbs[i].body->GetPosition().x * renderScale, -limbs[i].body->GetPosition().y * renderScale);
+            s.setRotation(-limbs[i].body->GetAngle() * 180.0f / pi);
+
+            window.draw(s);
+        }
     }
 }

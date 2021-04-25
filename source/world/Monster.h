@@ -19,10 +19,14 @@ public:
 
         float targetAngle;
 
+        // Gameplay
+        bool hasWeakspot;
+
         Limb()
         :
         parent(nullptr),
-        targetAngle(0.0f)
+        targetAngle(0.0f),
+        hasWeakspot(false)
         {}
     };
 
@@ -32,20 +36,29 @@ private:
     std::vector<Limb> limbs;
 
     aon::Hierarchy h;
+
+    sf::SoundBuffer* popBuffer;
+    sf::Sound pop;
+
+    bool dead;
     
 public:
     void init(
         class MonsterEnv* env,
         const b2Vec2 &spawnPos,
-        unsigned int seed
+        unsigned int seed,
+        sf::SoundBuffer* popSound
     );
 
     void step(
-        float reward
+        World* world,
+        float reward,
+        bool simMode = false
     );
 
     void render(
         sf::RenderTarget &window,
-        sf::Texture* monsterTexture
+        sf::Texture* monsterTexture,
+        sf::Texture* weakSpotTexture
     );
 };

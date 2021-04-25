@@ -1,9 +1,12 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/Window/Event.hpp>
+#include <aogmaneo/Hierarchy.h>
 
 #include "world/World.h"
 
 int main() {
+    aon::setNumThreads(8);
+
     int frameRate = 60;
 
     sf::RenderWindow window(sf::VideoMode(1200, 900), "SFML window");

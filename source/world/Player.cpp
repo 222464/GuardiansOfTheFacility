@@ -21,6 +21,8 @@ void Player::init(
     flipped = false;
     shootTimer = 0.0f;
     casingAlpha = 0.0f;
+    shootPos = sf::Vector2f(0.0f, 0.0f);
+    shot = false;
 
     firing.loadFromFile("resources/textures/soldier_firing.png");
     firingEmissive.loadFromFile("resources/textures/soldier_firing_emissive.png");
@@ -65,6 +67,8 @@ void Player::update(
 
     direction = 0;
 
+    shot = false;
+
     if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && shootTimer == 0.0f) {
         shootTimer = shootTime;
 
@@ -78,6 +82,9 @@ void Player::update(
         casingRVel = nDist(world->rng) * 16.0f;
 
         shootSound.play();
+
+        shootPos = mousePos;
+        shot = true;
     }
     else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && shootTimer < walkAgainTime) {
         position.x += dt * speed;

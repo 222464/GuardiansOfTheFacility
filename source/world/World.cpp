@@ -123,6 +123,8 @@ void World::init(
 
     monsterTexture.loadFromFile("resources/textures/meat2.png");
     monsterRenderShader.loadFromFile("resources/shaders/monster.frag", sf::Shader::Fragment);
+    monsterPopSound.loadFromFile("resources/sounds/pop.wav");
+    weakSpotTexture.loadFromFile("resources/textures/weakSpot.png");
 
     const ldtk::Entity &monsterSpawn = entities.getEntities("Monster")[0];
 
@@ -131,9 +133,12 @@ void World::init(
 
     ldtk::IntPoint floorPos = entities.getEntities("Floor")[0].getPosition();
 
-    env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv));
+    env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv), &monsterPopSound);
 
     monsterRenderTexture.create(window.getSize().x, window.getSize().y);
+
+    splatter.loadFromFile("resources/textures/splat.png");
+    splatters.clear();
 }
 
 void World::update(
@@ -142,8 +147,8 @@ void World::update(
 ) {
     player->update(this, window, dt);
 
-    for (int ss = 0; ss < 10; ss++)
-        env->step(dt);
+    for (int ss = 0; ss < 1; ss++)
+        env->step(dt, this, false);
 }
 
 void World::render(
@@ -157,10 +162,22 @@ void World::render(
     window.draw(tilemap2, states);
     window.draw(tilemap3, states);
 
+    // Render splatters
+    sf::Sprite splat;
+    splat.setTexture(splatter);
+    splat.setOrigin(splatter.getSize().x * 0.5f, splatter.getSize().y * 0.5f);
+
+    for (int i = 0; i < splatters.size(); i++) {
+        splat.setPosition(sf::Vector2f(splatters[i].x, splatters[i].y));
+        splat.setRotation(splatters[i].z);
+
+        window.draw(splat);
+    }
+
     player->render(this, window);
     monsterRenderTexture.setView(window.getView());
     monsterRenderTexture.clear(sf::Color::Transparent);
-    env->monster.render(monsterRenderTexture, &monsterTexture);
+    env->monster.render(monsterRenderTexture, &monsterTexture, &weakSpotTexture);
     monsterRenderTexture.display();
 
     window.setView(window.getDefaultView());

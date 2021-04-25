@@ -35,6 +35,9 @@ private:
     float casingRVel;
 
 public:
+    sf::Vector2f shootPos;
+    bool shot;
+
     void init(
         World* world,
         const sf::Vector2f &spawn
