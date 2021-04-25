@@ -1,6 +1,7 @@
 #include "Player.h"
 
 const float shootTime = 1.0f;
+const float flashRatio = 0.8f;
 
 void Player::init(
     World* world,
@@ -22,6 +23,7 @@ void Player::init(
     casingAlpha = 0.0f;
 
     firing.loadFromFile("resources/textures/soldier_firing.png");
+    firingEmissive.loadFromFile("resources/textures/soldier_firing_emissive.png");
     lightTex.loadFromFile("resources/ltbl/pointLightTexture.png");
 
     light = std::make_shared<ltbl::LightPointEmission>();
@@ -29,8 +31,9 @@ void Player::init(
     light->emissionSprite.setTexture(lightTex);
     light->emissionSprite.setOrigin(lightTex.getSize().x * 0.5f, lightTex.getSize().y * 0.5f);
     light->emissionSprite.setPosition(position);
-    light->emissionSprite.setScale(12.0f, 12.0f);
+    light->emissionSprite.setScale(2.0f * renderScale, 2.0f * renderScale);
     light->emissionSprite.setColor(sf::Color(50, 100, 50, 255));
+    light->sourceRadius = 10.0f * renderScale;
 
     world->ls.addLight(light);
 
@@ -44,7 +47,8 @@ void Player::init(
     flash->emissionSprite.setTexture(lightTex);
     flash->emissionSprite.setOrigin(lightTex.getSize().x * 0.5f, lightTex.getSize().y * 0.5f);
     flash->emissionSprite.setPosition(position);
-    flash->emissionSprite.setScale(8.0f, 8.0f);
+    flash->emissionSprite.setScale(3.0f * renderScale, 3.0f * renderScale);
+    flash->sourceRadius = 10.0f * renderScale;
 
     world->ls.addLight(flash);
 }
@@ -146,8 +150,6 @@ void Player::render(
     World* world,
     sf::RenderWindow &window
 ) {
-    const float flashRatio = 0.8f;
-
     sf::Sprite s;
 
     if (direction == 0)
@@ -188,4 +190,17 @@ void Player::renderPostLighting(
     chs.setScale(renderScale, renderScale);
 
     window.draw(chs);
+
+    sf::Sprite s;
+
+    if (direction == 0 && shootTimer > shootTime * flashRatio) {
+        s.setTexture(firingEmissive);
+
+        s.setScale(flipped ? -renderScale : renderScale, renderScale);
+
+        s.setOrigin(standing.getSize().x * 0.5f - 3.0f, standing.getSize().y);
+        s.setPosition(position * renderScale);
+
+        window.draw(s);
+    }
 }

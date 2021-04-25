@@ -1,5 +1,6 @@
 #include "World.h"
 #include "Player.h"
+#include "MonsterEnv.h"
 
 void World::init(
     const std::string &fileName,
@@ -85,7 +86,7 @@ void World::init(
     lightOverShapeShader.loadFromFile("resources/ltbl/lightOverShapeShader.vert", "resources/ltbl/lightOverShapeShader.frag");
     spookyLightTexture.loadFromFile("resources/ltbl/spookyLightTexture.tga");
 
-    ls.create(sf::FloatRect(0.0f, 0.0f, 512.0f, 512.0f), sf::Vector2u(window.getSize().x * renderScaleInv + 1, window.getSize().y * renderScaleInv + 1), penumbraTexture, unshadowShader, lightOverShapeShader);
+    ls.create(sf::FloatRect(0.0f, 0.0f, 512.0f, 512.0f), sf::Vector2u(window.getSize().x, window.getSize().y), penumbraTexture, unshadowShader, lightOverShapeShader);
 
     // Add entities
     const ldtk::Layer &entities = level->getLayer("Entities");
@@ -96,9 +97,10 @@ void World::init(
         light->emissionSprite.setOrigin(spookyLightTexture.getSize().x * 0.5f, 64.0f);
         light->emissionSprite.setPosition(entity.getPosition().x * renderScale, entity.getPosition().y * renderScale);
         light->emissionSprite.setTexture(spookyLightTexture);
-        light->emissionSprite.setScale(2.0f, 2.0f);
+        light->emissionSprite.setScale(0.5f * renderScale, 0.5f * renderScale);
         light->emissionSprite.setColor(sf::Color(200, 200, 200, 255));
         light->localCastCenter = sf::Vector2f(0.0f, 0.0f);
+        light->sourceRadius = 10.0f * renderScale;
 
         ls.addLight(light);
     }
@@ -118,6 +120,11 @@ void World::init(
 
     player = std::make_shared<Player>();
     player->init(this, sf::Vector2f(200.0f, 16.0f * 13.0f));
+
+    monsterTexture.loadFromFile("resources/textures/meat.png");
+
+    env = std::make_shared<MonsterEnv>();
+    env->init();
 }
 
 void World::update(
@@ -138,6 +145,7 @@ void World::render(
     window.draw(tilemap3, states);
 
     player->render(this, window);
+    env->monster.render(window, &monsterTexture);
 
     ls.render(window.getView(), unshadowShader, lightOverShapeShader);
 
@@ -146,7 +154,6 @@ void World::render(
     
     sf::RenderStates lightStates = sf::RenderStates::Default;
     lightStates.blendMode = sf::BlendMultiply;
-    lightStates.transform.scale(renderScale, renderScale);
     
     sf::View oldView = window.getView();
 

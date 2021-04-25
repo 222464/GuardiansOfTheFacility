@@ -68,6 +68,8 @@ set(LD48_SRCS
     "source/Main.cpp"
     "source/world/World.cpp"
     "source/world/Player.cpp"
+    "source/world/MonsterEnv.cpp"
+    "source/world/Monster.cpp"
 )
 
 add_executable(LD48 ${LD48_SRCS})

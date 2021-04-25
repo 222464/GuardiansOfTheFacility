@@ -9,7 +9,7 @@
 #include <random>
 
 const float pi = 3.141f;
-const float renderScale = 4.0f;
+const float renderScale = 16.0f;
 const float renderScaleInv = 1.0f / renderScale;
 
 class World {
@@ -30,11 +30,14 @@ public:
     sf::Shader lightOverShapeShader;
 
     sf::Texture spookyLightTexture;
+    sf::Texture monsterTexture;
 
     std::vector<std::shared_ptr<ltbl::LightPointEmission>> lights;
     std::vector<std::shared_ptr<ltbl::LightShape>> lightShapes;
 
     std::mt19937 rng;
+
+    std::shared_ptr<class MonsterEnv> env;
 
     void init(
         const std::string &fileName,

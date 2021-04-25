@@ -8,6 +8,7 @@ private:
     sf::Texture standing;
     std::vector<sf::Texture> walking;
     sf::Texture firing;
+    sf::Texture firingEmissive;
     sf::Texture lightTex;
 
     sf::Vector2f position;
