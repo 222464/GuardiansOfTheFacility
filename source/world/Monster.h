@@ -57,7 +57,6 @@ public:
 
     void step(
         World* world,
-        float reward,
         bool simMode = false
     );
 

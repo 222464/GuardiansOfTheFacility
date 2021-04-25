@@ -453,13 +453,13 @@
 						},
 						{
 							"__identifier": "Monster",
-							"__grid": [542,160],
+							"__grid": [519,160],
 							"__pivot": [0,0],
 							"__tile": null,
 							"width": 16,
 							"height": 16,
 							"defUid": 9,
-							"px": [542,160],
+							"px": [519,160],
 							"fieldInstances": []
 						},
 						{

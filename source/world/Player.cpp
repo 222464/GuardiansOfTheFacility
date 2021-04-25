@@ -70,7 +70,7 @@ void Player::update(
 
     shot = false;
 
-    if (sf::Mouse::isButtonPressed(sf::Mouse::Left) && shootTimer == 0.0f) {
+    if (window.hasFocus() && sf::Mouse::isButtonPressed(sf::Mouse::Left) && shootTimer == 0.0f) {
         shootTimer = shootTime;
 
         casingAlpha = 1.0f;
@@ -87,11 +87,11 @@ void Player::update(
         shootPos = mousePos;
         shot = true;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && shootTimer < walkAgainTime) {
+    else if (window.hasFocus() && sf::Keyboard::isKeyPressed(sf::Keyboard::D) && shootTimer < walkAgainTime) {
         position.x += dt * speed;
         direction = 1;
     }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) && shootTimer < walkAgainTime) {
+    else if (window.hasFocus() && sf::Keyboard::isKeyPressed(sf::Keyboard::A) && shootTimer < walkAgainTime) {
         position.x -= dt * speed;
         direction = -1;
     }

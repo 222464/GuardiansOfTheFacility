@@ -30,12 +30,13 @@ int main() {
     world->init("resources/maps/map1.ldtk", window, seedDist(rng));
 
     sf::Font msgFont;
-    msgFont.loadFromFile("resources/Vera.ttf");
+    msgFont.loadFromFile("resources/terminal.ttf");
     sf::Text msg;
     msg.setFont(msgFont);
+    msg.setFillColor(sf::Color::Green);
     int dots = 0;
 
-    int pretrainTime = 400;
+    int pretrainTime = 300;
     int pretrainTimer = 0;
 
     sf::View view = window.getDefaultView();

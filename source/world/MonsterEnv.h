@@ -2,7 +2,6 @@
 
 class MonsterEnv {
 public:
-    float reward;
     Monster monster;
     sf::SoundBuffer* popSound;
     sf::SoundBuffer* grossSound;

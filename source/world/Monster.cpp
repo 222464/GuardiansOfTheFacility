@@ -7,12 +7,12 @@ const float moveRange = 2.2f;
 const float texRectSize = 0.1f;
 const float sizeDecay = 0.94f;
 const float branchBaseChance = 1.0f;
-const float repeatBaseChance = 0.6f;
-const float branchDecay = 0.9f;
-const float repeatDecay = 0.84f;
-const float side0Chance = 0.5f;
+const float repeatBaseChance = 0.7f;
+const float branchDecay = 0.8f;
+const float repeatDecay = 0.7f;
+const float side0Chance = 0.4f;
 
-const int sensorRes = 7;
+const int sensorRes = 5;
 const int actionRes = 3;
 
 const float motorSpeed = 6.0f;
@@ -29,11 +29,11 @@ void Monster::init(
     std::mt19937 rng(seed);
 
     std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
-    std::uniform_real_distribution<float> lengthDist(0.3f, 1.1f);
-    std::uniform_real_distribution<float> widthDist(0.1f, 0.5f);
+    std::uniform_real_distribution<float> lengthDist(0.5f, 1.4f);
+    std::uniform_real_distribution<float> widthDist(0.1f, 0.7f);
     std::uniform_real_distribution<float> angleDist(-0.2f, 0.2f);
     std::uniform_int_distribution<int> repeatDist(1, 6);
-    std::uniform_int_distribution<int> branchDist(1, 3);
+    std::uniform_int_distribution<int> branchDist(1, 4);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
     std::uniform_int_distribution<int> sideDist(0, 2);
     std::uniform_int_distribution<int> rootSideDist(0, 3);
@@ -147,7 +147,7 @@ void Monster::init(
         motorJointDef.Initialize(base.body, next.body, attachPosition);
         motorJointDef.collideConnected = false;
         motorJointDef.enableMotor = true;
-        motorJointDef.maxMotorTorque = 6.0f;
+        motorJointDef.maxMotorTorque = 30.0f;
         motorJointDef.motorSpeed = 0.0f;
 
         next.motorJoint = static_cast<b2RevoluteJoint*>(env->world->CreateJoint(&motorJointDef));
@@ -219,9 +219,6 @@ void Monster::init(
 
     h.initRandom(ioDescs, lds);
 
-    h.getALayers()[2]->vlr = 0.02f;
-    h.getALayers()[2]->alr = 0.02f;
-
     agentStep = 0;
 
     // Resources
@@ -238,11 +235,10 @@ void Monster::init(
 
 void Monster::step(
     World* world,
-    float reward,
     bool simMode
 ) {
     if (!dead) {
-        if (agentStep >= 4) {
+        if (agentStep >= 3) {
             agentStep = 0;
 
             aon::IntBuffer sensors0(h.getInputSizes()[0].x * h.getInputSizes()[1].y, 0);
@@ -258,7 +254,7 @@ void Monster::step(
             inputs[1] = &sensors1;
             inputs[2] = &h.getPredictionCIs(2);
 
-            reward = -limbs[0].body->GetLinearVelocity().x;
+            float reward = -limbs[0].body->GetLinearVelocity().x;
 
             h.step(inputs, true, reward);
         }

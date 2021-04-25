@@ -161,8 +161,7 @@ void World::update(
 ) {
     player->update(this, window, dt);
 
-    for (int ss = 0; ss < 1; ss++)
-        env->step(dt, this, false);
+    env->step(dt, this, false);
 
     if (env->monster.getPosition().x < player->getPosition().x) {
         levelFailed = true;

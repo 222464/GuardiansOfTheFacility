@@ -7,7 +7,6 @@ void MonsterEnv::init(
     sf::SoundBuffer* popSound,
     sf::SoundBuffer* grossSound
 ) {
-    reward = 0.0f;
     this->floorPos = b2Vec2(floorPos.x, floorPos.y);
     this->popSound = popSound;
     this->grossSound = grossSound;
@@ -42,9 +41,9 @@ void MonsterEnv::step(
     World* world,
     bool simMode 
 ) {
-    monster.step(world, reward, simMode);
+    monster.step(world, simMode);
 
-    this->world->Step(dt, 6, 6);
+    this->world->Step(dt, 8, 8);
 }
 
 void MonsterEnv::addCollider(
