@@ -1,10 +1,10 @@
 #include "Monster.h"
 #include "MonsterEnv.h"
 
-const int maxLimbs = 20;
+const int maxLimbs = 30;
 const float moveRange = 0.5f;
 const float texRectSize = 0.1f;
-const float sizeDecay = 0.9f;
+const float sizeDecay = 0.92f;
 
 void Monster::init(
     MonsterEnv* env,
@@ -16,8 +16,8 @@ void Monster::init(
     std::uniform_real_distribution<float> lengthDist(0.2f, 1.0f);
     std::uniform_real_distribution<float> widthDist(0.05f, 0.5f);
     std::uniform_real_distribution<float> angleDist(-0.5f, 0.5f);
-    std::uniform_int_distribution<int> repeatDist(0, 5);
-    std::uniform_int_distribution<int> branchDist(0, 2);
+    std::uniform_int_distribution<int> repeatDist(0, 7);
+    std::uniform_int_distribution<int> branchDist(0, 3);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
     std::uniform_int_distribution<int> sideDist(0, 2);
 
