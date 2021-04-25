@@ -4,6 +4,7 @@
 const int maxLimbs = 20;
 const float moveRange = 0.5f;
 const float texRectSize = 0.1f;
+const float sizeDecay = 0.9f;
 
 void Monster::init(
     MonsterEnv* env,
@@ -52,7 +53,7 @@ void Monster::init(
         limbs.push_back(root);
     }
 
-    std::function<int(int, unsigned int)> limbGen = [&](int baseIndex, unsigned int subSeed) -> int {
+    std::function<int(int, unsigned int, int)> limbGen = [&](int baseIndex, unsigned int subSeed, int depth) -> int {
         if (limbs.size() >= maxLimbs)
             return limbs.size() - 1;
 
@@ -64,8 +65,10 @@ void Monster::init(
 
         next.parent = &base;
 
+        float sizeMult = std::pow(sizeDecay, depth);
+
         b2PolygonShape shape;
-        next.size = sf::Vector2f(lengthDist(subRng), widthDist(subRng));
+        next.size = sf::Vector2f(lengthDist(subRng) * sizeMult, widthDist(subRng) * sizeMult);
         shape.SetAsBox(next.size.x * 0.5f, next.size.y * 0.5f);
 
         float angle = angleDist(subRng);
@@ -127,19 +130,19 @@ void Monster::init(
         int branches = branchDist(subRng);
 
         for (int b = 0; b < branches; b++)
-            limbGen(lastIndex, subSeed + (1 + b) * 12345);
+            limbGen(lastIndex, subSeed + (1 + b) * 12345, depth + 1);
 
         int repeats = repeatDist(subRng);
 
         for (int r = 0; r < repeats; r++)
-            lastIndex = limbGen(lastIndex, subSeed + 12345);
+            lastIndex = limbGen(lastIndex, subSeed + 12345, depth + 1);
 
         return lastIndex;
     };
 
     std::uniform_int_distribution<int> seedDist(0, 99999);
 
-    limbGen(0, seedDist(rng));
+    limbGen(0, seedDist(rng), 1);
 }
 
 void Monster::step(
