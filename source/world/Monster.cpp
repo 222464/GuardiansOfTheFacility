@@ -22,7 +22,8 @@ void Monster::init(
     MonsterEnv* env,
     const b2Vec2 &spawnPos,
     unsigned int seed,
-    sf::SoundBuffer* popSound
+    sf::SoundBuffer* popSound,
+    sf::SoundBuffer* grossSound
 ) {
     std::mt19937 rng(seed);
 
@@ -207,6 +208,12 @@ void Monster::init(
     popBuffer = popSound;
     pop.setBuffer(*popBuffer);
 
+    grossBuffer = grossSound;
+    gross.setBuffer(*grossBuffer);
+    gross.setLoop(true);
+    gross.setVolume(20.0f);
+    gross.play();
+
     dead = false;
 }
 
@@ -260,6 +267,8 @@ void Monster::step(
                         world->splatters.push_back(sf::Vector3f(centerPos.x * renderScale, centerPos.y * renderScale, quadDist(world->rng) * 90.0f));
 
                         // Destroy sound
+                        std::uniform_real_distribution<float> pitchDist(0.8f, 1.2f);
+                        pop.setPitch(pitchDist(world->rng));
                         pop.play();
                     }
                 }
@@ -268,6 +277,8 @@ void Monster::step(
 
         if (numWeakSpots == 0) {
             dead = true;
+
+            gross.stop();
 
             // Go limp
             for (int i = 1; i < limbs.size(); i++) {

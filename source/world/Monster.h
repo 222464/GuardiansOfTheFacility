@@ -39,6 +39,8 @@ private:
 
     sf::SoundBuffer* popBuffer;
     sf::Sound pop;
+    sf::SoundBuffer* grossBuffer;
+    sf::Sound gross;
 
     bool dead;
     
@@ -47,7 +49,8 @@ public:
         class MonsterEnv* env,
         const b2Vec2 &spawnPos,
         unsigned int seed,
-        sf::SoundBuffer* popSound
+        sf::SoundBuffer* popSound,
+        sf::SoundBuffer* grossSound
     );
 
     void step(

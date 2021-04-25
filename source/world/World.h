@@ -34,6 +34,7 @@ public:
     sf::Shader monsterRenderShader;
     sf::RenderTexture monsterRenderTexture;
     sf::SoundBuffer monsterPopSound;
+    sf::SoundBuffer monsterGrossSound;
     sf::Texture weakSpotTexture;
 
     std::vector<sf::Vector3f> splatters;

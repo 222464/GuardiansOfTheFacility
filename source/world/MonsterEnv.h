@@ -5,6 +5,7 @@ public:
     float reward;
     Monster monster;
     sf::SoundBuffer* popSound;
+    sf::SoundBuffer* grossSound;
 
     unsigned int seed;
     b2Vec2 spawn;
@@ -19,7 +20,8 @@ public:
 
     void init(
         const sf::Vector2f &floorPos,
-        sf::SoundBuffer* popSound
+        sf::SoundBuffer* popSound,
+        sf::SoundBuffer* grossSound
     );
 
     void reset();

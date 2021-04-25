@@ -124,6 +124,7 @@ void World::init(
     monsterTexture.loadFromFile("resources/textures/meat2.png");
     monsterRenderShader.loadFromFile("resources/shaders/monster.frag", sf::Shader::Fragment);
     monsterPopSound.loadFromFile("resources/sounds/pop.wav");
+    monsterGrossSound.loadFromFile("resources/sounds/gross.wav");
     weakSpotTexture.loadFromFile("resources/textures/weakSpot.png");
 
     const ldtk::Entity &monsterSpawn = entities.getEntities("Monster")[0];
@@ -133,7 +134,7 @@ void World::init(
 
     ldtk::IntPoint floorPos = entities.getEntities("Floor")[0].getPosition();
 
-    env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv), &monsterPopSound);
+    env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv), &monsterPopSound, &monsterGrossSound);
 
     monsterRenderTexture.create(window.getSize().x, window.getSize().y);
 
