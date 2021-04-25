@@ -1,10 +1,19 @@
 #include "Monster.h"
 #include "MonsterEnv.h"
 
-const int maxLimbs = 30;
-const float moveRange = 0.5f;
+const int maxLimbs = 20;
+const float moveRange = 1.0f;
 const float texRectSize = 0.1f;
 const float sizeDecay = 0.92f;
+const float branchBaseChance = 1.0f;
+const float repeatBaseChance = 0.5f;
+const float branchDecay = 0.9f;
+const float repeatDecay = 0.8f;
+
+const int sensorRes = 9;
+const int actionRes = 7;
+
+const float motorSpeed = 1.0f;
 
 void Monster::init(
     MonsterEnv* env,
@@ -13,11 +22,12 @@ void Monster::init(
 ) {
     std::mt19937 rng(seed);
 
+    std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
     std::uniform_real_distribution<float> lengthDist(0.2f, 1.0f);
     std::uniform_real_distribution<float> widthDist(0.05f, 0.5f);
     std::uniform_real_distribution<float> angleDist(-0.5f, 0.5f);
-    std::uniform_int_distribution<int> repeatDist(0, 7);
-    std::uniform_int_distribution<int> branchDist(0, 3);
+    std::uniform_int_distribution<int> repeatDist(1, 5);
+    std::uniform_int_distribution<int> branchDist(1, 3);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
     std::uniform_int_distribution<int> sideDist(0, 2);
     std::uniform_int_distribution<int> rootSideDist(0, 3);
@@ -137,12 +147,18 @@ void Monster::init(
 
         int lastIndex = limbs.size() - 1;
 
-        int branches = branchDist(subRng);
+        int branches = 0;
+
+        if (dist01(subRng) < branchBaseChance * std::pow(branchDecay, depth))
+            branches = branchDist(subRng);
 
         for (int b = 0; b < branches; b++)
             limbGen(lastIndex, subSeed + (1 + b) * 12345, depth + 1);
 
-        int repeats = repeatDist(subRng);
+        int repeats = 0;
+
+        if (dist01(subRng) < repeatBaseChance * std::pow(repeatDecay, depth))
+            repeats = repeatDist(subRng);
 
         for (int r = 0; r < repeats; r++)
             lastIndex = limbGen(lastIndex, subSeed, depth + 1);
@@ -152,12 +168,54 @@ void Monster::init(
 
     std::uniform_int_distribution<int> seedDist(0, 99999);
 
-    limbGen(0, seedDist(rng), 1);
+    int startBranches = branchDist(rng);
+
+    for (int b = 0; b < startBranches; b++)
+        limbGen(0, seedDist(rng), 1);
+
+    // Agent
+    
+    aon::Array<aon::Hierarchy::LayerDesc> lds(2);
+
+    for (int i = 0; i < lds.size(); i++) {
+        lds[i].hiddenSize = aon::Int3(4, 4, 16);
+        lds[i].errorSize = aon::Int3(4, 4, 16);
+    }
+
+    aon::Array<aon::Hierarchy::IODesc> ioDescs(2);
+
+    int numMotors = limbs.size() - 1;
+
+    int inputSizeRoot = std::ceil(std::sqrt(numMotors));
+    ioDescs[0].size = aon::Int3(inputSizeRoot, inputSizeRoot, sensorRes);
+    ioDescs[0].type = aon::prediction;
+    ioDescs[1].size = aon::Int3(inputSizeRoot, inputSizeRoot, actionRes);
+    ioDescs[1].type = aon::action;
+
+    h.initRandom(ioDescs, lds);
 }
 
 void Monster::step(
     float reward
 ) {
+    aon::IntBuffer sensors(h.getInputSizes()[0].x * h.getInputSizes()[1].y, 0);
+
+    for (int i = 1; i < limbs.size(); i++)
+        sensors[i - 1] = (std::min(moveRange, std::max(-moveRange, limbs[i].motorJoint->GetJointAngle())) / moveRange * 0.5f + 0.5f) * (sensorRes - 1) + 0.5f;
+
+    aon::Array<const aon::IntBuffer*> inputs(2);
+    inputs[0] = &sensors;
+    inputs[1] = &h.getPredictionCIs(1);
+
+    h.step(inputs, true, reward);
+
+    for (int i = 1; i < limbs.size(); i++) {
+        float target = moveRange * (h.getPredictionCIs(1)[i - 1] / static_cast<float>(actionRes - 1) * 2.0f - 1.0f);
+
+        limbs[i].motorJoint->SetMotorSpeed(motorSpeed * (target - limbs[i].motorJoint->GetJointAngle()));
+    }
+
+    reward = -limbs[0].body->GetLinearVelocity().x;
 }
 
 void Monster::render(

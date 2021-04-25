@@ -5,7 +5,6 @@
 #include <aogmaneo/Hierarchy.h>
 #include <box2d/box2d.h>
 
-
 class Monster {
 public:
     struct Limb {
@@ -31,6 +30,8 @@ private:
     sf::Texture meat;
 
     std::vector<Limb> limbs;
+
+    aon::Hierarchy h;
     
 public:
     void init(
