@@ -20,6 +20,7 @@ void Monster::init(
     std::uniform_int_distribution<int> branchDist(0, 3);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
     std::uniform_int_distribution<int> sideDist(0, 2);
+    std::uniform_int_distribution<int> rootSideDist(0, 3);
 
     limbs.clear();
 
@@ -73,7 +74,12 @@ void Monster::init(
 
         float angle = angleDist(subRng);
 
-        int side = sideDist(rng);
+        int side;
+
+        if (baseIndex == 0)
+            side = rootSideDist(subRng);
+        else
+            side = sideDist(subRng);
 
         b2Vec2 attachDelta;
 
@@ -91,6 +97,10 @@ void Monster::init(
         case 2:
             attachDelta = b2Vec2(std::cos(base.body->GetAngle() - 0.5f * pi) * base.size.y * 0.5f, std::sin(base.body->GetAngle() - 0.5f * pi) * base.size.y * 0.5f);
             angle -= 0.5f * pi;
+            break;
+        case 3:
+            attachDelta = b2Vec2(std::cos(base.body->GetAngle() + pi) * base.size.x * 0.5f, std::sin(base.body->GetAngle() + pi) * base.size.x * 0.5f);
+            angle += pi;
             break;
         }
 

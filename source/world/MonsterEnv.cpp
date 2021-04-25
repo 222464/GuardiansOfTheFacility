@@ -5,7 +5,7 @@ const b2Vec2 gravity(0.0f, -9.81f);
 void MonsterEnv::init(
     const sf::Vector2f &floorPos
 ) {
-    seed = 1234;
+    seed = 12345;
     reward = 0.0f;
     this->floorPos = b2Vec2(floorPos.x, floorPos.y);
 
