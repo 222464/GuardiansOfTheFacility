@@ -141,7 +141,9 @@ void World::update(
     float dt
 ) {
     player->update(this, window, dt);
-    env->step(dt);
+
+    for (int ss = 0; ss < 10; ss++)
+        env->step(dt);
 }
 
 void World::render(

@@ -2,18 +2,18 @@
 #include "MonsterEnv.h"
 
 const int maxLimbs = 20;
-const float moveRange = 1.0f;
+const float moveRange = 1.5f;
 const float texRectSize = 0.1f;
 const float sizeDecay = 0.92f;
 const float branchBaseChance = 1.0f;
-const float repeatBaseChance = 0.5f;
+const float repeatBaseChance = 0.6f;
 const float branchDecay = 0.9f;
 const float repeatDecay = 0.8f;
 
 const int sensorRes = 9;
 const int actionRes = 7;
 
-const float motorSpeed = 1.0f;
+const float motorSpeed = 4.0f;
 
 void Monster::init(
     MonsterEnv* env,
@@ -26,7 +26,7 @@ void Monster::init(
     std::uniform_real_distribution<float> lengthDist(0.2f, 1.0f);
     std::uniform_real_distribution<float> widthDist(0.05f, 0.5f);
     std::uniform_real_distribution<float> angleDist(-0.5f, 0.5f);
-    std::uniform_int_distribution<int> repeatDist(1, 5);
+    std::uniform_int_distribution<int> repeatDist(1, 6);
     std::uniform_int_distribution<int> branchDist(1, 3);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
     std::uniform_int_distribution<int> sideDist(0, 2);
