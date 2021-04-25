@@ -37,6 +37,11 @@ private:
 public:
     sf::Vector2f shootPos;
     bool shot;
+    bool atEnd;
+
+    const sf::Vector2f &getPosition() const {
+        return position;
+    }
 
     void init(
         World* world,

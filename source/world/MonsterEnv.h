@@ -15,6 +15,7 @@ public:
 
     MonsterEnv()
     :
+    seed(12345),
     spawn(0.0f, 0.0f)
     {}
 
@@ -26,9 +27,18 @@ public:
 
     void reset();
 
+    void moveToSpawn() {
+        monster.move(spawn);
+    }
+
     void step(
         float dt,
         World* world,
         bool simMode = false
+    );
+
+    void addCollider(
+        const sf::Vector2f &pos,
+        const sf::Vector2f &size
     );
 };

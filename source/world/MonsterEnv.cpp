@@ -7,7 +7,6 @@ void MonsterEnv::init(
     sf::SoundBuffer* popSound,
     sf::SoundBuffer* grossSound
 ) {
-    seed = 12345;
     reward = 0.0f;
     this->floorPos = b2Vec2(floorPos.x, floorPos.y);
     this->popSound = popSound;
@@ -46,4 +45,25 @@ void MonsterEnv::step(
     monster.step(world, reward, simMode);
 
     this->world->Step(dt, 8, 8);
+}
+
+void MonsterEnv::addCollider(
+    const sf::Vector2f &pos,
+    const sf::Vector2f &size
+) {
+    b2PolygonShape shape;
+    shape.SetAsBox(size.x * 0.5f, size.y * 0.5f);
+
+    b2BodyDef bodyDef;
+    bodyDef.type = b2_staticBody;
+    bodyDef.position = b2Vec2(pos.x, pos.y);
+
+    b2Body* collider = world->CreateBody(&bodyDef);
+
+    b2FixtureDef fixtureDef;
+    fixtureDef.shape = &shape;
+    fixtureDef.friction = 1.0f;
+    fixtureDef.restitution = 0.001f;
+    
+    collider->CreateFixture(&fixtureDef);
 }

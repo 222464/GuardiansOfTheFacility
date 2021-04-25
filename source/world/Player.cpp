@@ -23,6 +23,7 @@ void Player::init(
     casingAlpha = 0.0f;
     shootPos = sf::Vector2f(0.0f, 0.0f);
     shot = false;
+    atEnd = false;
 
     firing.loadFromFile("resources/textures/soldier_firing.png");
     firingEmissive.loadFromFile("resources/textures/soldier_firing_emissive.png");
@@ -108,10 +109,14 @@ void Player::update(
 
     const float wallDist = 101.0f;
 
+    atEnd = false;
+
     if (position.x < wallDist)
         position.x = wallDist;
-    else if (position.x > world->level->size.x - wallDist)
-        position.x = world->level->size.x - wallDist;
+    else if (position.x > world->level->size.x - 16.0f * 10.0f - wallDist) {
+        position.x = world->level->size.x - 16.0f * 10.0f - wallDist;
+        atEnd = true;
+    }
 
     light->emissionSprite.setPosition((position + sf::Vector2f(0.0f, -38.0f)) );
     light->quadtreeUpdate();

@@ -4,8 +4,14 @@
 
 void World::init(
     const std::string &fileName,
-    sf::RenderWindow &window
+    sf::RenderWindow &window,
+    unsigned int seed
 ) {
+    levelClear = false;
+    levelFailed = false;
+
+    rng.seed(seed);
+
     world.loadFromFile(fileName);
 
     level = &world.getLevel(0);
@@ -134,7 +140,14 @@ void World::init(
 
     ldtk::IntPoint floorPos = entities.getEntities("Floor")[0].getPosition();
 
+    std::uniform_int_distribution<int> seedDist(0, 99999);
+    env->seed = seedDist(rng);
     env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv), &monsterPopSound, &monsterGrossSound);
+
+    for (const ldtk::Entity &entity : entities.getEntities("Collider")) {
+        env->addCollider(sf::Vector2f((entity.getPosition().x + entity.getSize().x * 0.5f) * renderScaleInv, -(entity.getPosition().y + entity.getSize().y * 0.5f) * renderScaleInv),
+            sf::Vector2f(entity.getSize().x * renderScaleInv, entity.getSize().y * renderScaleInv));
+    }
 
     monsterRenderTexture.create(window.getSize().x, window.getSize().y);
 
@@ -150,6 +163,14 @@ void World::update(
 
     for (int ss = 0; ss < 1; ss++)
         env->step(dt, this, false);
+
+    if (env->monster.getPosition().x < player->getPosition().x) {
+        levelFailed = true;
+    }
+
+    if (player->atEnd) {
+        levelClear = true;
+    }
 }
 
 void World::render(
@@ -209,4 +230,16 @@ void World::render(
     window.setView(oldView);
 
     player->renderPostLighting(this, window);
+}
+
+void World::pretrain(
+    float dt
+) {
+    for (int ss = 0; ss < 100; ss++)
+        env->step(dt, this, true);
+}
+
+void World::start() {
+    env->moveToSpawn();
+    levelClear = false;
 }

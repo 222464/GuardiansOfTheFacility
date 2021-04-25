@@ -64,4 +64,12 @@ public:
         sf::Texture* monsterTexture,
         sf::Texture* weakSpotTexture
     );
+
+    void move(
+        const b2Vec2 &position
+    );
+
+    const b2Vec2 &getPosition() const {
+        return limbs[0].body->GetPosition();
+    }
 };

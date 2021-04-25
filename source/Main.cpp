@@ -3,6 +3,8 @@
 #include <aogmaneo/Hierarchy.h>
 
 #include "world/World.h"
+#include "world/Player.h"
+#include "world/MonsterEnv.h"
 
 int main() {
     aon::setNumThreads(8);
@@ -18,11 +20,27 @@ int main() {
 
     float dt = 1.0f / frameRate;
 
-    World world;
-    world.init("resources/maps/map1.ldtk", window);
+    int levelIndex = 0;
+
+    std::mt19937 rng(time(nullptr));
+
+    std::uniform_int_distribution<int> seedDist(0, 99999);
+
+    std::unique_ptr<World> world = std::make_unique<World>();
+    world->init("resources/maps/map1.ldtk", window, seedDist(rng));
+
+    sf::Font msgFont;
+    msgFont.loadFromFile("resources/Vera.ttf");
+    sf::Text msg;
+    msg.setFont(msgFont);
+    int dots = 0;
+
+    int pretrainTime = 600;
+    int pretrainTimer = 0;
 
     sf::View view = window.getDefaultView();
-    sf::View newView = view;
+    view.zoom(0.2f);
+    //sf::View newView = view;
 
     float zoomRate = 0.25f;
     float viewInterpolateRate = 20.0f;
@@ -44,52 +62,110 @@ int main() {
 
                     break;
 
-                case sf::Event::MouseWheelMoved:
-                    int dWheel = event.mouseWheel.delta;
+                //case sf::Event::MouseWheelMoved:
+                //    int dWheel = event.mouseWheel.delta;
 
-                    newView = view;
+                //    newView = view;
 
-                    window.setView(newView);
+                //    window.setView(newView);
 
-                    sf::Vector2f mouseZoomDelta0 = window.mapPixelToCoords(mousePos);
+                //    sf::Vector2f mouseZoomDelta0 = window.mapPixelToCoords(mousePos);
 
-                    newView.setSize(view.getSize() + newView.getSize() * (-zoomRate * dWheel));
+                //    newView.setSize(view.getSize() + newView.getSize() * (-zoomRate * dWheel));
 
-                    window.setView(newView);
+                //    window.setView(newView);
 
-                    sf::Vector2f mouseZoomDelta1 = window.mapPixelToCoords(mousePos);
+                //    sf::Vector2f mouseZoomDelta1 = window.mapPixelToCoords(mousePos);
 
-                    window.setView(view);
+                //    window.setView(view);
 
-                    newView.setCenter(view.getCenter() + mouseZoomDelta0 - mouseZoomDelta1);
+                //    newView.setCenter(view.getCenter() + mouseZoomDelta0 - mouseZoomDelta1);
 
-                    break;
+                //    break;
                 }
             }
 
-            sf::Time duration = globalClock.restart();
+            //sf::Time duration = globalClock.restart();
 
-            view.setCenter(view.getCenter() + (newView.getCenter() - view.getCenter()) * viewInterpolateRate * dt);
-            view.setSize(view.getSize() + (newView.getSize() - view.getSize()) * viewInterpolateRate * dt);
+            //view.setCenter(view.getCenter() + (newView.getCenter() - view.getCenter()) * viewInterpolateRate * dt);
+            //view.setSize(view.getSize() + (newView.getSize() - view.getSize()) * viewInterpolateRate * dt);
 
-            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
-                sf::Vector2i dPos = mousePos - prevMousePos;
+            //if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+            //    sf::Vector2i dPos = mousePos - prevMousePos;
 
-                view.setCenter(view.getCenter() - sf::Vector2f(dPos.x * (static_cast<float>(view.getSize().x) / window.getSize().x), dPos.y * (static_cast<float>(view.getSize().x) / window.getSize().x)));
+            //    view.setCenter(view.getCenter() - sf::Vector2f(dPos.x * (static_cast<float>(view.getSize().x) / window.getSize().x), dPos.y * (static_cast<float>(view.getSize().x) / window.getSize().x)));
 
-                newView.setCenter(view.getCenter());
-            }
+            //    newView.setCenter(view.getCenter());
+            //}
         }
 
-        prevMousePos = mousePos;
+        //prevMousePos = mousePos;
 
-        world.update(window, dt);
+        view.setCenter(sf::Vector2f(world->player->getPosition().x + 80.0f, world->player->getPosition().y - 30.0f));
+        window.setView(view);
+
+        if (pretrainTimer < pretrainTime) {
+            world->pretrain(dt);
+
+            pretrainTimer++;
+
+            if (pretrainTimer == pretrainTime)
+                world->start();
+        }
+        else {
+            world->update(window, dt);
+        }
+
+        if (world->levelClear) {
+            // Start new level
+            world = std::make_unique<World>();
+            world->init("resources/maps/map1.ldtk", window, seedDist(rng));
+            pretrainTimer = 0;
+        }
 
         window.setView(view);
 
         window.clear(sf::Color::Black);
 
-        world.render(window);
+        if (pretrainTimer < pretrainTime) {
+            window.setView(window.getDefaultView());
+
+            if (pretrainTimer % 20 == 0) {
+                dots++;
+
+                if (dots > 3)
+                    dots = 0;
+            }
+
+            switch (dots) {
+            case 0:
+                msg.setString("Generating");
+                break;
+            case 1:
+                msg.setString("Generating.");
+                break;
+            case 2:
+                msg.setString("Generating..");
+                break;
+            case 3:
+                msg.setString("Generating...");
+                break;
+            }
+
+            msg.setPosition(20.0f, 20.0f);
+
+            window.draw(msg);
+
+            int percentage = 100.0f * (pretrainTimer / static_cast<float>(pretrainTime - 1));
+
+            msg.setString(std::to_string(percentage) + "%");
+
+            msg.setPosition(20.0f, 55.0f);
+
+            window.draw(msg);
+        }
+        else
+            world->render(window);
 
         window.display();
     }

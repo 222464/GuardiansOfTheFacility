@@ -47,10 +47,20 @@ public:
 
     std::shared_ptr<class MonsterEnv> env;
 
+    bool levelClear;
+    bool levelFailed;
+
     void init(
         const std::string &fileName,
-        sf::RenderWindow &window
+        sf::RenderWindow &window,
+        unsigned int seed
     );
+
+    void pretrain(
+        float dt
+    );
+
+    void start();
 
     void update(
         sf::RenderWindow &window,

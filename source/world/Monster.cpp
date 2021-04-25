@@ -2,7 +2,7 @@
 #include "MonsterEnv.h"
 #include "Player.h"
 
-const int maxLimbs = 20;
+const int maxLimbs = 12;
 const float moveRange = 1.5f;
 const float texRectSize = 0.1f;
 const float sizeDecay = 0.92f;
@@ -11,12 +11,12 @@ const float repeatBaseChance = 0.6f;
 const float branchDecay = 0.9f;
 const float repeatDecay = 0.8f;
 
-const int sensorRes = 9;
-const int actionRes = 7;
+const int sensorRes = 7;
+const int actionRes = 5;
 
-const float motorSpeed = 4.0f;
+const float motorSpeed = 14.0f;
 const float weakSpotChance = 0.2f;
-const float weakSpotSize = 0.3f;
+const float weakSpotSize = 0.35f;
 
 void Monster::init(
     MonsterEnv* env,
@@ -28,9 +28,9 @@ void Monster::init(
     std::mt19937 rng(seed);
 
     std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
-    std::uniform_real_distribution<float> lengthDist(0.2f, 1.0f);
-    std::uniform_real_distribution<float> widthDist(0.05f, 0.5f);
-    std::uniform_real_distribution<float> angleDist(-0.5f, 0.5f);
+    std::uniform_real_distribution<float> lengthDist(0.3f, 1.1f);
+    std::uniform_real_distribution<float> widthDist(0.1f, 0.5f);
+    std::uniform_real_distribution<float> angleDist(-0.6f, 0.6f);
     std::uniform_int_distribution<int> repeatDist(1, 6);
     std::uniform_int_distribution<int> branchDist(1, 3);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
@@ -185,7 +185,7 @@ void Monster::init(
 
     // Agent
     
-    aon::Array<aon::Hierarchy::LayerDesc> lds(2);
+    aon::Array<aon::Hierarchy::LayerDesc> lds(1);
 
     for (int i = 0; i < lds.size(); i++) {
         lds[i].hiddenSize = aon::Int3(4, 4, 16);
@@ -212,7 +212,6 @@ void Monster::init(
     gross.setBuffer(*grossBuffer);
     gross.setLoop(true);
     gross.setVolume(20.0f);
-    gross.play();
 
     dead = false;
 }
@@ -285,6 +284,10 @@ void Monster::step(
                 limbs[i].motorJoint->SetMaxMotorTorque(0.01f);
             }
         }
+        else {
+            if (gross.getStatus() != sf::Sound::Playing)
+                gross.play();
+        }
     }
 }
 
@@ -317,4 +320,13 @@ void Monster::render(
             window.draw(s);
         }
     }
+}
+
+void Monster::move(
+    const b2Vec2 &position
+) {
+    b2Vec2 delta = position - limbs[0].body->GetPosition();
+
+    for (int i = 0; i < limbs.size(); i++)
+        limbs[i].body->SetTransform(limbs[i].body->GetPosition() + delta, limbs[i].body->GetAngle());
 }
