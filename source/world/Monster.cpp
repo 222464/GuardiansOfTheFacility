@@ -2,21 +2,22 @@
 #include "MonsterEnv.h"
 #include "Player.h"
 
-const int maxLimbs = 12;
-const float moveRange = 1.5f;
+const int maxLimbs = 16;
+const float moveRange = 2.2f;
 const float texRectSize = 0.1f;
-const float sizeDecay = 0.92f;
+const float sizeDecay = 0.94f;
 const float branchBaseChance = 1.0f;
 const float repeatBaseChance = 0.6f;
 const float branchDecay = 0.9f;
-const float repeatDecay = 0.8f;
+const float repeatDecay = 0.84f;
+const float side0Chance = 0.5f;
 
 const int sensorRes = 7;
-const int actionRes = 5;
+const int actionRes = 3;
 
-const float motorSpeed = 14.0f;
+const float motorSpeed = 6.0f;
 const float weakSpotChance = 0.2f;
-const float weakSpotSize = 0.35f;
+const float weakSpotSize = 0.4f;
 
 void Monster::init(
     MonsterEnv* env,
@@ -30,7 +31,7 @@ void Monster::init(
     std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
     std::uniform_real_distribution<float> lengthDist(0.3f, 1.1f);
     std::uniform_real_distribution<float> widthDist(0.1f, 0.5f);
-    std::uniform_real_distribution<float> angleDist(-0.6f, 0.6f);
+    std::uniform_real_distribution<float> angleDist(-0.2f, 0.2f);
     std::uniform_int_distribution<int> repeatDist(1, 6);
     std::uniform_int_distribution<int> branchDist(1, 3);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
@@ -98,6 +99,9 @@ void Monster::init(
         else
             side = sideDist(subRng);
 
+        if (dist01(subRng) < side0Chance)
+            side = 0;
+
         b2Vec2 attachDelta;
 
         switch (side) {
@@ -143,7 +147,7 @@ void Monster::init(
         motorJointDef.Initialize(base.body, next.body, attachPosition);
         motorJointDef.collideConnected = false;
         motorJointDef.enableMotor = true;
-        motorJointDef.maxMotorTorque = 10.0f;
+        motorJointDef.maxMotorTorque = 6.0f;
         motorJointDef.motorSpeed = 0.0f;
 
         next.motorJoint = static_cast<b2RevoluteJoint*>(env->world->CreateJoint(&motorJointDef));
@@ -185,24 +189,40 @@ void Monster::init(
 
     // Agent
     
-    aon::Array<aon::Hierarchy::LayerDesc> lds(1);
+    aon::Array<aon::Hierarchy::LayerDesc> lds(2);
 
     for (int i = 0; i < lds.size(); i++) {
-        lds[i].hiddenSize = aon::Int3(4, 4, 16);
-        lds[i].errorSize = aon::Int3(4, 4, 16);
+        lds[i].hiddenSize = aon::Int3(3, 3, 16);
+        lds[i].errorSize = aon::Int3(3, 3, 16);
+
+        lds[i].dRadius = 1;
+        lds[i].bRadius = 1;
     }
 
-    aon::Array<aon::Hierarchy::IODesc> ioDescs(2);
+    aon::Array<aon::Hierarchy::IODesc> ioDescs(3);
 
     int numMotors = limbs.size() - 1;
 
     int inputSizeRoot = std::ceil(std::sqrt(numMotors));
     ioDescs[0].size = aon::Int3(inputSizeRoot, inputSizeRoot, sensorRes);
     ioDescs[0].type = aon::prediction;
-    ioDescs[1].size = aon::Int3(inputSizeRoot, inputSizeRoot, actionRes);
-    ioDescs[1].type = aon::action;
+    ioDescs[0].dRadius = 1;
+    ioDescs[0].bRadius = 1;
+    ioDescs[1].size = aon::Int3(inputSizeRoot, inputSizeRoot, sensorRes);
+    ioDescs[1].type = aon::prediction;
+    ioDescs[1].dRadius = 1;
+    ioDescs[1].bRadius = 1;
+    ioDescs[2].size = aon::Int3(inputSizeRoot, inputSizeRoot, actionRes);
+    ioDescs[2].type = aon::action;
+    ioDescs[2].dRadius = 1;
+    ioDescs[2].bRadius = 1;
 
     h.initRandom(ioDescs, lds);
+
+    h.getALayers()[2]->vlr = 0.02f;
+    h.getALayers()[2]->alr = 0.02f;
+
+    agentStep = 0;
 
     // Resources
     popBuffer = popSound;
@@ -222,24 +242,34 @@ void Monster::step(
     bool simMode
 ) {
     if (!dead) {
-        aon::IntBuffer sensors(h.getInputSizes()[0].x * h.getInputSizes()[1].y, 0);
+        if (agentStep >= 4) {
+            agentStep = 0;
 
-        for (int i = 1; i < limbs.size(); i++)
-            sensors[i - 1] = (std::min(moveRange, std::max(-moveRange, limbs[i].motorJoint->GetJointAngle())) / moveRange * 0.5f + 0.5f) * (sensorRes - 1) + 0.5f;
+            aon::IntBuffer sensors0(h.getInputSizes()[0].x * h.getInputSizes()[1].y, 0);
+            aon::IntBuffer sensors1(sensors0.size(), 0);
 
-        aon::Array<const aon::IntBuffer*> inputs(2);
-        inputs[0] = &sensors;
-        inputs[1] = &h.getPredictionCIs(1);
+            for (int i = 1; i < limbs.size(); i++) {
+                sensors0[i - 1] = (std::min(moveRange, std::max(-moveRange, limbs[i].motorJoint->GetJointAngle())) / moveRange * 0.5f + 0.5f) * (sensorRes - 1) + 0.5f;
+                sensors1[i - 1] = (std::min(pi, std::max(-pi, limbs[i].body->GetAngle())) / pi * 0.5f + 0.5f) * (sensorRes - 1) + 0.5f;
+            }
 
-        h.step(inputs, true, reward);
+            aon::Array<const aon::IntBuffer*> inputs(3);
+            inputs[0] = &sensors0;
+            inputs[1] = &sensors1;
+            inputs[2] = &h.getPredictionCIs(2);
+
+            reward = -limbs[0].body->GetLinearVelocity().x;
+
+            h.step(inputs, true, reward);
+        }
+
+        agentStep++;
 
         for (int i = 1; i < limbs.size(); i++) {
-            float target = moveRange * (h.getPredictionCIs(1)[i - 1] / static_cast<float>(actionRes - 1) * 2.0f - 1.0f);
+            float target = moveRange * (h.getPredictionCIs(2)[i - 1] / static_cast<float>(actionRes - 1) * 2.0f - 1.0f);
 
             limbs[i].motorJoint->SetMotorSpeed(motorSpeed * (target - limbs[i].motorJoint->GetJointAngle()));
         }
-
-        reward = -limbs[0].body->GetLinearVelocity().x;
     }
 
     if (!simMode && !dead) {

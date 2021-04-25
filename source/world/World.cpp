@@ -235,7 +235,7 @@ void World::render(
 void World::pretrain(
     float dt
 ) {
-    for (int ss = 0; ss < 100; ss++)
+    for (int ss = 0; ss < 200; ss++)
         env->step(dt, this, true);
 }
 

@@ -42,6 +42,8 @@ private:
     sf::SoundBuffer* grossBuffer;
     sf::Sound gross;
 
+    int agentStep;
+
     bool dead;
     
 public:

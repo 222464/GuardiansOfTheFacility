@@ -35,7 +35,7 @@ int main() {
     msg.setFont(msgFont);
     int dots = 0;
 
-    int pretrainTime = 600;
+    int pretrainTime = 400;
     int pretrainTimer = 0;
 
     sf::View view = window.getDefaultView();
