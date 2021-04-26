@@ -5,8 +5,6 @@
 const float moveRange = 1.0f;
 const float texRectSize = 0.1f;
 const float sizeDecay = 0.85;
-const float branchBaseChance = 1.0f;
-const float repeatBaseChance = 0.5f;
 const float side0Chance = 0.4f;
 const float density = 10.0f;
 
@@ -39,11 +37,13 @@ void Monster::init(
     std::uniform_int_distribution<int> sideDist(0, 2);
     std::uniform_int_distribution<int> rootSideDist(0, 3);
 
+    float branchBaseChance = 1.0f;
+    float repeatBaseChance = 0.5f;
     float branchDecay = 0.7f;
     float repeatDecay = 0.6f;
 
     if (monsterLevel == 2) {
-        maxLimbs = 12;
+        maxLimbs = 16;
 
         branchDecay = 0.8f;
         repeatDecay = 0.7f;
@@ -52,7 +52,7 @@ void Monster::init(
         branchDist = std::uniform_int_distribution<int>(1, 5);
     }
     else if (monsterLevel == 3) {
-        maxLimbs = 18;
+        maxLimbs = 32;
 
         branchDecay = 0.9f;
         repeatDecay = 0.8f;
