@@ -60,6 +60,11 @@ int main() {
     sf::Sound screamSound;
     screamSound.setBuffer(screamBuffer);
 
+    sf::Music ambience;
+    ambience.openFromFile("resources/sounds/ambience.ogg");
+    ambience.setLoop(true);
+    ambience.play();
+
     while (window.isOpen()) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
@@ -212,7 +217,7 @@ int main() {
 
                 msg.setPosition(20.0f, 20.0f);
 
-                msg.setString("Victory?");
+                msg.setString("Is this the reactor? I have done it?");
 
                 window.draw(msg);
 
