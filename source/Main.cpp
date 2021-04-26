@@ -50,6 +50,10 @@ int main() {
 
     sf::Clock globalClock;
 
+    sf::Color backgroundColor = sf::Color::Black;
+    bool gameFinished = false;
+    int numLevels = 6;
+
     while (window.isOpen()) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
@@ -114,20 +118,38 @@ int main() {
                 world->start();
         }
         else {
-            world->update(window, dt);
+            if (!world->levelFailed)
+                world->update(window, dt);
         }
 
         if (world->levelClear) {
             // Start new level
-            world = std::make_unique<World>();
-            world->init("resources/maps/map1.ldtk", window, seedDist(rng));
-            pretrainTimer = 0;
             levelIndex++;
+
+            if (levelIndex >= numLevels) {
+                gameFinished = true;
+            }
+
+            world = std::make_unique<World>();
+            world->init("resources/maps/map" + std::to_string(levelIndex) + ".ldtk", window, seedDist(rng));
+            pretrainTimer = 0;
         }
+
+        if (world->levelFailed) {
+            // Start new level
+            levelIndex = 0;
+            world = std::make_unique<World>();
+            world->init("resources/maps/map" + std::to_string(levelIndex) + ".ldtk", window, seedDist(rng));
+            pretrainTimer = 0;
+
+            backgroundColor = sf::Color::Red;
+        }
+        else
+            backgroundColor = sf::Color::Black;
 
         window.setView(view);
 
-        window.clear(sf::Color::Black);
+        window.clear(backgroundColor);
 
         if (pretrainTimer < pretrainTime) {
             window.setView(window.getDefaultView());
@@ -172,8 +194,35 @@ int main() {
 
             window.draw(msg);
         }
-        else
-            world->render(window);
+        else {
+            if (gameFinished) {
+                msg.setPosition(20.0f, 20.0f);
+
+                msg.setString("Victory?");
+
+                window.draw(msg);
+
+                msg.setPosition(20.0f, 55.0f);
+
+                msg.setString("Space to play again");
+
+                window.draw(msg);
+
+                if (window.hasFocus() && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+                    gameFinished = false;
+
+                    levelIndex = 0;
+                    world = std::make_unique<World>();
+                    world->init("resources/maps/map" + std::to_string(levelIndex) + ".ldtk", window, seedDist(rng));
+                    pretrainTimer = 0;
+                }
+
+            }
+            else {
+                if (!world->levelFailed)
+                    world->render(window);
+            }
+        }
 
         window.display();
     }
