@@ -11,7 +11,7 @@ const float density = 10.0f;
 const int sensorRes = 7;
 const int actionRes = 5;
 
-const float motorSpeed = 9.0f;
+const float motorSpeed = 8.0f;
 const float weakSpotChance = 0.25f;
 const float weakSpotSize = 0.4f;
 
@@ -29,7 +29,7 @@ void Monster::init(
 
     std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
     std::uniform_real_distribution<float> lengthDist(0.4f, 1.2f);
-    std::uniform_real_distribution<float> widthDist(0.1f, 0.25f);
+    std::uniform_real_distribution<float> widthDist(0.1f, 0.2f);
     std::uniform_real_distribution<float> angleDist(-0.2f, 0.2f);
     std::uniform_int_distribution<int> repeatDist(1, 6);
     std::uniform_int_distribution<int> branchDist(1, 3);
@@ -43,22 +43,22 @@ void Monster::init(
     float repeatDecay = 0.6f;
 
     if (monsterLevel == 2) {
-        maxLimbs = 16;
+        maxLimbs = 12;
 
         branchDecay = 0.8f;
         repeatDecay = 0.7f;
 
-        repeatDist = std::uniform_int_distribution<int>(1, 8);
-        branchDist = std::uniform_int_distribution<int>(1, 5);
+        repeatDist = std::uniform_int_distribution<int>(2, 7);
+        branchDist = std::uniform_int_distribution<int>(2, 4);
     }
     else if (monsterLevel == 3) {
-        maxLimbs = 32;
+        maxLimbs = 18;
 
         branchDecay = 0.9f;
-        repeatDecay = 0.8f;
+        repeatDecay = 0.8;
 
-        repeatDist = std::uniform_int_distribution<int>(1, 10);
-        branchDist = std::uniform_int_distribution<int>(1, 6);
+        repeatDist = std::uniform_int_distribution<int>(3, 8);
+        branchDist = std::uniform_int_distribution<int>(3, 5);
     }
 
     limbs.clear();
