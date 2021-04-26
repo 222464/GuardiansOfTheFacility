@@ -1,6 +1,6 @@
 #include "MonsterEnv.h"
 
-const b2Vec2 gravity(0.0f, -9.81f);
+const b2Vec2 gravity(0.0f, -20.0f);
 
 void MonsterEnv::init(
     int monsterLevel,

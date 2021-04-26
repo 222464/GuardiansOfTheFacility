@@ -11,7 +11,7 @@ const float density = 10.0f;
 const int sensorRes = 7;
 const int actionRes = 5;
 
-const float motorSpeed = 4.0f;
+const float motorSpeed = 6.0f;
 const float weakSpotChance = 0.25f;
 const float weakSpotSize = 0.4f;
 
@@ -174,7 +174,7 @@ void Monster::init(
         motorJointDef.Initialize(base.body, next.body, attachPosition);
         motorJointDef.collideConnected = false;
         motorJointDef.enableMotor = true;
-        motorJointDef.maxMotorTorque = 300.0f * volume * density;
+        motorJointDef.maxMotorTorque = 400.0f * volume * density;
         motorJointDef.motorSpeed = 0.0f;
 
         next.motorJoint = static_cast<b2RevoluteJoint*>(env->world->CreateJoint(&motorJointDef));

@@ -126,7 +126,7 @@ int main() {
             }
         }
         else {
-            if (!world->levelFailed)
+            if (!world->levelFailed && !gameFinished)
                 world->update(window, dt);
         }
 
@@ -134,9 +134,8 @@ int main() {
             // Start new level
             levelIndex++;
 
-            if (levelIndex >= numLevels) {
+            if (levelIndex >= numLevels)
                 gameFinished = true;
-            }
             else {
                 world = std::make_unique<World>();
                 world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
@@ -170,16 +169,16 @@ int main() {
 
             switch (dots) {
             case 0:
-                msg.setString("Reanimating");
+                msg.setString("Reanimating corpses");
                 break;
             case 1:
-                msg.setString("Reanimating.");
+                msg.setString("Reanimating corpses.");
                 break;
             case 2:
-                msg.setString("Reanimating..");
+                msg.setString("Reanimating corpses..");
                 break;
             case 3:
-                msg.setString("Reanimating...");
+                msg.setString("Reanimating corpses...");
                 break;
             }
 
@@ -200,9 +199,17 @@ int main() {
             msg.setPosition(20.0f, 90.0f);
 
             window.draw(msg);
+
+            msg.setString("WASD and Mouse to destroy");
+
+            msg.setPosition(20.0f, 125.0f);
+
+            window.draw(msg);
         }
         else {
             if (gameFinished) {
+                window.setView(window.getDefaultView());
+
                 msg.setPosition(20.0f, 20.0f);
 
                 msg.setString("Victory?");
@@ -223,7 +230,6 @@ int main() {
                     world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
                     pretrainTimer = 0;
                 }
-
             }
             else {
                 if (!world->levelFailed)
