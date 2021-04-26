@@ -205,7 +205,7 @@ int main() {
 
             window.draw(msg);
 
-            msg.setString("WASD and Mouse to destroy");
+            msg.setString("A&D keys + Mouse to destroy");
 
             msg.setPosition(20.0f, 125.0f);
 
@@ -217,7 +217,7 @@ int main() {
 
                 msg.setPosition(20.0f, 20.0f);
 
-                msg.setString("Is this the reactor? I have done it?");
+                msg.setString("Is this the reactor? Have I done it?");
 
                 window.draw(msg);
 
