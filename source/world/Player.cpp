@@ -36,7 +36,7 @@ void Player::init(
     light->emissionSprite.setPosition(position);
     light->emissionSprite.setScale(2.0f , 2.0f);
     light->emissionSprite.setColor(sf::Color(50, 100, 50, 255));
-    light->sourceRadius = 10.0f ;
+    light->sourceRadius = 10.0f;
 
     world->ls.addLight(light);
 
