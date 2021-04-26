@@ -2,14 +2,11 @@
 #include "MonsterEnv.h"
 #include "Player.h"
 
-const int maxLimbs = 12;
 const float moveRange = 1.0f;
 const float texRectSize = 0.1f;
 const float sizeDecay = 0.85;
 const float branchBaseChance = 1.0f;
 const float repeatBaseChance = 0.5f;
-const float branchDecay = 0.7f;
-const float repeatDecay = 0.6f;
 const float side0Chance = 0.4f;
 const float density = 10.0f;
 
@@ -21,6 +18,7 @@ const float weakSpotChance = 0.25f;
 const float weakSpotSize = 0.4f;
 
 void Monster::init(
+    int monsterLevel,
     MonsterEnv* env,
     const b2Vec2 &spawnPos,
     unsigned int seed,
@@ -28,6 +26,8 @@ void Monster::init(
     sf::SoundBuffer* grossSound
 ) {
     std::mt19937 rng(seed);
+
+    int maxLimbs = 6;
 
     std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
     std::uniform_real_distribution<float> lengthDist(0.4f, 1.2f);
@@ -38,6 +38,28 @@ void Monster::init(
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
     std::uniform_int_distribution<int> sideDist(0, 2);
     std::uniform_int_distribution<int> rootSideDist(0, 3);
+
+    float branchDecay = 0.7f;
+    float repeatDecay = 0.6f;
+
+    if (monsterLevel == 2) {
+        maxLimbs = 12;
+
+        branchDecay = 0.8f;
+        repeatDecay = 0.7f;
+
+        repeatDist = std::uniform_int_distribution<int>(1, 8);
+        branchDist = std::uniform_int_distribution<int>(1, 5);
+    }
+    else if (monsterLevel == 3) {
+        maxLimbs = 18;
+
+        branchDecay = 0.9f;
+        repeatDecay = 0.8f;
+
+        repeatDist = std::uniform_int_distribution<int>(1, 10);
+        branchDist = std::uniform_int_distribution<int>(1, 6);
+    }
 
     limbs.clear();
 

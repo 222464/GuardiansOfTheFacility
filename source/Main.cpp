@@ -54,6 +54,12 @@ int main() {
     bool gameFinished = false;
     int numLevels = 6;
 
+    sf::SoundBuffer screamBuffer;
+    screamBuffer.loadFromFile("resources/sounds/scream.wav");
+
+    sf::Sound screamSound;
+    screamSound.setBuffer(screamBuffer);
+
     while (window.isOpen()) {
         sf::Vector2i mousePos = sf::Mouse::getPosition(window);
 
@@ -114,8 +120,10 @@ int main() {
 
             pretrainTimer++;
 
-            if (pretrainTimer == pretrainTime)
+            if (pretrainTimer == pretrainTime) {
                 world->start();
+                backgroundColor = sf::Color::Black;
+            }
         }
         else {
             if (!world->levelFailed)
@@ -131,7 +139,7 @@ int main() {
             }
 
             world = std::make_unique<World>();
-            world->init("resources/maps/map" + std::to_string(levelIndex) + ".ldtk", window, seedDist(rng));
+            world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
             pretrainTimer = 0;
         }
 
@@ -139,15 +147,13 @@ int main() {
             // Start new level
             levelIndex = 0;
             world = std::make_unique<World>();
-            world->init("resources/maps/map" + std::to_string(levelIndex) + ".ldtk", window, seedDist(rng));
+            world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
             pretrainTimer = 0;
 
             backgroundColor = sf::Color::Red;
-        }
-        else
-            backgroundColor = sf::Color::Black;
 
-        window.setView(view);
+            screamSound.play();
+        }
 
         window.clear(backgroundColor);
 
@@ -213,7 +219,7 @@ int main() {
 
                     levelIndex = 0;
                     world = std::make_unique<World>();
-                    world->init("resources/maps/map" + std::to_string(levelIndex) + ".ldtk", window, seedDist(rng));
+                    world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
                     pretrainTimer = 0;
                 }
 

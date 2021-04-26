@@ -9,6 +9,7 @@ public:
     unsigned int seed;
     b2Vec2 spawn;
     b2Vec2 floorPos;
+    int monsterLevel;
 
     std::shared_ptr<b2World> world;
 
@@ -19,6 +20,7 @@ public:
     {}
 
     void init(
+        int monsterLevel,
         const sf::Vector2f &floorPos,
         sf::SoundBuffer* popSound,
         sf::SoundBuffer* grossSound

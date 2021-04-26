@@ -43,11 +43,12 @@ private:
     sf::Sound gross;
 
     int agentStep;
-
-    bool dead;
     
 public:
+    bool dead;
+
     void init(
+        int monsterLevel,
         class MonsterEnv* env,
         const b2Vec2 &spawnPos,
         unsigned int seed,

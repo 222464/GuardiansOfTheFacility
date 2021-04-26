@@ -5,6 +5,7 @@
 void World::init(
     const std::string &fileName,
     sf::RenderWindow &window,
+    int monsterLevel,
     unsigned int seed
 ) {
     levelClear = false;
@@ -91,6 +92,9 @@ void World::init(
     unshadowShader.loadFromFile("resources/ltbl/unshadowShader.vert", "resources/ltbl/unshadowShader.frag");
     lightOverShapeShader.loadFromFile("resources/ltbl/lightOverShapeShader.vert", "resources/ltbl/lightOverShapeShader.frag");
     spookyLightTexture.loadFromFile("resources/ltbl/spookyLightTexture.tga");
+    bulbLightTexture.loadFromFile("resources/textures/bulbLightTexture.png");
+    penumbraTexture.setSmooth(true);
+    bulbLightTexture.setSmooth(true);
 
     ls.create(sf::FloatRect(0.0f, 0.0f, 512.0f, 512.0f), sf::Vector2u(window.getSize().x, window.getSize().y), penumbraTexture, unshadowShader, lightOverShapeShader);
 
@@ -100,13 +104,34 @@ void World::init(
     for (const ldtk::Entity &entity : entities.getEntities("Light")) {
         std::shared_ptr<ltbl::LightPointEmission> light = std::make_shared<ltbl::LightPointEmission>();
 
-        light->emissionSprite.setOrigin(spookyLightTexture.getSize().x * 0.5f, 64.0f);
-        light->emissionSprite.setPosition(entity.getPosition().x, entity.getPosition().y);
-        light->emissionSprite.setTexture(spookyLightTexture);
-        light->emissionSprite.setScale(0.5f, 0.5f);
-        light->emissionSprite.setColor(sf::Color(200, 200, 200, 255));
-        light->localCastCenter = sf::Vector2f(0.0f, 0.0f);
-        light->sourceRadius = 10.0f;
+        if (entity.getField<std::string>("Type") == std::string("Spooky")) {
+            light->emissionSprite.setOrigin(spookyLightTexture.getSize().x * 0.5f, 64.0f);
+            light->emissionSprite.setPosition(entity.getPosition().x, entity.getPosition().y);
+            light->emissionSprite.setTexture(spookyLightTexture);
+            light->emissionSprite.setScale(0.5f, 0.5f);
+            light->emissionSprite.setColor(sf::Color(200, 200, 200, 255));
+            light->localCastCenter = sf::Vector2f(0.0f, 0.0f);
+            light->sourceRadius = 10.0f;
+        }
+        else if (entity.getField<std::string>("Type") == std::string("End")) {
+            light->emissionSprite.setOrigin(bulbLightTexture.getSize().x * 0.5f, 0.0f);
+            light->emissionSprite.setPosition(entity.getPosition().x, entity.getPosition().y);
+            light->emissionSprite.setTexture(bulbLightTexture);
+            light->emissionSprite.setScale(4.0f, 30.0f);
+            light->emissionSprite.setRotation(90.0f);
+            light->emissionSprite.setColor(sf::Color(255, 255, 255, 255));
+            light->localCastCenter = sf::Vector2f(0.0f, 0.0f);
+            light->sourceRadius = 10.0f;
+        }
+        else {
+            light->emissionSprite.setOrigin(bulbLightTexture.getSize().x * 0.5f, 0.0f);
+            light->emissionSprite.setPosition(entity.getPosition().x, entity.getPosition().y);
+            light->emissionSprite.setTexture(bulbLightTexture);
+            light->emissionSprite.setScale(3.0f, 3.0f);
+            light->emissionSprite.setColor(sf::Color(100, 100, 70, 255));
+            light->localCastCenter = sf::Vector2f(0.0f, 0.0f);
+            light->sourceRadius = 10.0f;
+        }
 
         ls.addLight(light);
     }
@@ -142,7 +167,7 @@ void World::init(
 
     std::uniform_int_distribution<int> seedDist(0, 99999);
     env->seed = seedDist(rng);
-    env->init(sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv), &monsterPopSound, &monsterGrossSound);
+    env->init(monsterLevel, sf::Vector2f(floorPos.x * renderScaleInv, -floorPos.y * renderScaleInv), &monsterPopSound, &monsterGrossSound);
 
     for (const ldtk::Entity &entity : entities.getEntities("Collider")) {
         env->addCollider(sf::Vector2f((entity.getPosition().x + entity.getSize().x * 0.5f) * renderScaleInv, -(entity.getPosition().y + entity.getSize().y * 0.5f) * renderScaleInv),
@@ -163,7 +188,7 @@ void World::update(
 
     env->step(dt, this, false);
 
-    if (env->monster.getPosition().x < player->getPosition().x) {
+    if (!env->monster.dead && env->monster.getPosition().x < player->getPosition().x * renderScaleInv) {
         levelFailed = true;
     }
 
@@ -240,5 +265,4 @@ void World::pretrain(
 
 void World::start() {
     env->moveToSpawn();
-    levelClear = false;
 }

@@ -34,7 +34,7 @@ void Player::init(
     light->emissionSprite.setTexture(lightTex);
     light->emissionSprite.setOrigin(lightTex.getSize().x * 0.5f, lightTex.getSize().y * 0.5f);
     light->emissionSprite.setPosition(position);
-    light->emissionSprite.setScale(2.0f , 2.0f );
+    light->emissionSprite.setScale(2.0f , 2.0f);
     light->emissionSprite.setColor(sf::Color(50, 100, 50, 255));
     light->sourceRadius = 10.0f ;
 
@@ -118,7 +118,7 @@ void Player::update(
         atEnd = true;
     }
 
-    light->emissionSprite.setPosition((position + sf::Vector2f(0.0f, -38.0f)) );
+    light->emissionSprite.setPosition((position + sf::Vector2f(0.0f, -44.0f)) );
     light->quadtreeUpdate();
 
     flash->emissionSprite.setPosition((position + sf::Vector2f(flipped ? -10.0f : 10.0f, -36.0f)) );

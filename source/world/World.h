@@ -30,6 +30,7 @@ public:
     sf::Shader lightOverShapeShader;
 
     sf::Texture spookyLightTexture;
+    sf::Texture bulbLightTexture;
     sf::Texture monsterTexture;
     sf::Shader monsterRenderShader;
     sf::RenderTexture monsterRenderTexture;
@@ -53,6 +54,7 @@ public:
     void init(
         const std::string &fileName,
         sf::RenderWindow &window,
+        int monsterLevel,
         unsigned int seed
     );
 
