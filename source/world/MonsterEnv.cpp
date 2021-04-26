@@ -43,7 +43,7 @@ void MonsterEnv::step(
 ) {
     monster.step(world, simMode);
 
-    this->world->Step(dt, 8, 8);
+    this->world->Step(dt, 4, 4);
 }
 
 void MonsterEnv::addCollider(

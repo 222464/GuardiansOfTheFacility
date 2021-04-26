@@ -2,21 +2,22 @@
 #include "MonsterEnv.h"
 #include "Player.h"
 
-const int maxLimbs = 16;
-const float moveRange = 2.2f;
+const int maxLimbs = 12;
+const float moveRange = 1.0f;
 const float texRectSize = 0.1f;
-const float sizeDecay = 0.94f;
+const float sizeDecay = 0.85;
 const float branchBaseChance = 1.0f;
-const float repeatBaseChance = 0.7f;
-const float branchDecay = 0.8f;
-const float repeatDecay = 0.7f;
+const float repeatBaseChance = 0.5f;
+const float branchDecay = 0.7f;
+const float repeatDecay = 0.6f;
 const float side0Chance = 0.4f;
+const float density = 10.0f;
 
-const int sensorRes = 5;
-const int actionRes = 3;
+const int sensorRes = 7;
+const int actionRes = 5;
 
-const float motorSpeed = 6.0f;
-const float weakSpotChance = 0.2f;
+const float motorSpeed = 9.0f;
+const float weakSpotChance = 0.25f;
 const float weakSpotSize = 0.4f;
 
 void Monster::init(
@@ -29,11 +30,11 @@ void Monster::init(
     std::mt19937 rng(seed);
 
     std::uniform_real_distribution<float> dist01(0.0f, 1.0f);
-    std::uniform_real_distribution<float> lengthDist(0.5f, 1.4f);
-    std::uniform_real_distribution<float> widthDist(0.1f, 0.7f);
+    std::uniform_real_distribution<float> lengthDist(0.4f, 1.2f);
+    std::uniform_real_distribution<float> widthDist(0.1f, 0.25f);
     std::uniform_real_distribution<float> angleDist(-0.2f, 0.2f);
     std::uniform_int_distribution<int> repeatDist(1, 6);
-    std::uniform_int_distribution<int> branchDist(1, 4);
+    std::uniform_int_distribution<int> branchDist(1, 3);
     std::uniform_real_distribution<float> texOffsetDist(0.0f, 1.0f - texRectSize);
     std::uniform_int_distribution<int> sideDist(0, 2);
     std::uniform_int_distribution<int> rootSideDist(0, 3);
@@ -57,7 +58,7 @@ void Monster::init(
 
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &shape;
-        fixtureDef.density = 1.0f;
+        fixtureDef.density = density;
         fixtureDef.friction = 1.0f;
         fixtureDef.restitution = 0.001f;
         
@@ -137,17 +138,19 @@ void Monster::init(
 
         b2FixtureDef fixtureDef;
         fixtureDef.shape = &shape;
-        fixtureDef.density = 1.0f;
+        fixtureDef.density = density;
         fixtureDef.friction = 1.0f;
         fixtureDef.restitution = 0.001f;
         
         next.body->CreateFixture(&fixtureDef);
 
+        float volume = next.size.x * next.size.y;
+
         b2RevoluteJointDef motorJointDef;
         motorJointDef.Initialize(base.body, next.body, attachPosition);
         motorJointDef.collideConnected = false;
         motorJointDef.enableMotor = true;
-        motorJointDef.maxMotorTorque = 30.0f;
+        motorJointDef.maxMotorTorque = 300.0f * volume * density;
         motorJointDef.motorSpeed = 0.0f;
 
         next.motorJoint = static_cast<b2RevoluteJoint*>(env->world->CreateJoint(&motorJointDef));
@@ -189,11 +192,11 @@ void Monster::init(
 
     // Agent
     
-    aon::Array<aon::Hierarchy::LayerDesc> lds(2);
+    aon::Array<aon::Hierarchy::LayerDesc> lds(1);
 
     for (int i = 0; i < lds.size(); i++) {
-        lds[i].hiddenSize = aon::Int3(3, 3, 16);
-        lds[i].errorSize = aon::Int3(3, 3, 16);
+        lds[i].hiddenSize = aon::Int3(3, 3, 32);
+        lds[i].errorSize = aon::Int3(3, 3, 32);
 
         lds[i].dRadius = 1;
         lds[i].bRadius = 1;
@@ -282,7 +285,7 @@ void Monster::step(
 
                     float dist = std::sqrt(delta.x * delta.x + delta.y * delta.y);
 
-                    if (dist < weakSpotSize * 0.5f) {
+                    if (dist < weakSpotSize * 0.5f + 2.0f * renderScaleInv) {
                         limbs[i].hasWeakspot = false;
 
                         numWeakSpots--;

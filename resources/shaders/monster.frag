@@ -13,6 +13,7 @@ void main() {
 
     if (pixel.a < 0.5) {
         vec4 surround = vec4(0.0, 0.0, 0.0, 0.0);
+        float minDist = roundness;
 
         for (float dx = -roundness; dx <= roundness; dx += 1.0)
             for (float dy = -roundness; dy <= roundness; dy += 1.0) {
@@ -20,8 +21,12 @@ void main() {
 
                 vec4 color = texture2D(texture, surroundCoord);
 
-                if (color.a > 0.5)
+                float d = min(abs(dx), abs(dy));
+
+                if (color.a > 0.5 && d < minDist) {
                     surround = color;
+                    minDist = d;
+                }
             }
 
         gl_FragColor = gl_Color * surround;

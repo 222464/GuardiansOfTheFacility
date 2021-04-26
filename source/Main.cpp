@@ -122,6 +122,7 @@ int main() {
             world = std::make_unique<World>();
             world->init("resources/maps/map1.ldtk", window, seedDist(rng));
             pretrainTimer = 0;
+            levelIndex++;
         }
 
         window.setView(view);
@@ -140,16 +141,16 @@ int main() {
 
             switch (dots) {
             case 0:
-                msg.setString("Generating");
+                msg.setString("Reanimating");
                 break;
             case 1:
-                msg.setString("Generating.");
+                msg.setString("Reanimating.");
                 break;
             case 2:
-                msg.setString("Generating..");
+                msg.setString("Reanimating..");
                 break;
             case 3:
-                msg.setString("Generating...");
+                msg.setString("Reanimating...");
                 break;
             }
 
@@ -162,6 +163,12 @@ int main() {
             msg.setString(std::to_string(percentage) + "%");
 
             msg.setPosition(20.0f, 55.0f);
+
+            window.draw(msg);
+
+            msg.setString("Level " + std::to_string(levelIndex + 1));
+
+            msg.setPosition(20.0f, 90.0f);
 
             window.draw(msg);
         }
