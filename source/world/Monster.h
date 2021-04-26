@@ -42,6 +42,8 @@ private:
     sf::SoundBuffer* grossBuffer;
     sf::Sound gross;
 
+    aon::IntBuffer actionCIs;
+
     int agentStep;
     
 public:

@@ -27,7 +27,7 @@ int main() {
     std::uniform_int_distribution<int> seedDist(0, 99999);
 
     std::unique_ptr<World> world = std::make_unique<World>();
-    world->init("resources/maps/map1.ldtk", window, levelIndex / 2 + 1, seedDist(rng));
+    world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
 
     sf::Font msgFont;
     msgFont.loadFromFile("resources/terminal.ttf");
@@ -137,10 +137,11 @@ int main() {
             if (levelIndex >= numLevels) {
                 gameFinished = true;
             }
-
-            world = std::make_unique<World>();
-            world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
-            pretrainTimer = 0;
+            else {
+                world = std::make_unique<World>();
+                world->init("resources/maps/map" + std::to_string(levelIndex + 1) + ".ldtk", window, levelIndex / 2 + 1, seedDist(rng));
+                pretrainTimer = 0;
+            }
         }
 
         if (world->levelFailed) {

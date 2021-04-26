@@ -109,7 +109,7 @@ void World::init(
             light->emissionSprite.setPosition(entity.getPosition().x, entity.getPosition().y);
             light->emissionSprite.setTexture(spookyLightTexture);
             light->emissionSprite.setScale(0.5f, 0.5f);
-            light->emissionSprite.setColor(sf::Color(200, 200, 200, 255));
+            light->emissionSprite.setColor(sf::Color(160, 160, 160, 255));
             light->localCastCenter = sf::Vector2f(0.0f, 0.0f);
             light->sourceRadius = 10.0f;
         }
@@ -259,7 +259,7 @@ void World::render(
 void World::pretrain(
     float dt
 ) {
-    for (int ss = 0; ss < 200; ss++)
+    for (int ss = 0; ss < 300; ss++)
         env->step(dt, this, true);
 }
 
